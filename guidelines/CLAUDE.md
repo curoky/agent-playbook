@@ -21,58 +21,11 @@
 - 优先使用库提供的高层 API，避免手写易错的底层逻辑（如手动拼接路径、手动解析日期）。
 - 避免引入已停止维护（deprecated / 长期无更新）或被社区公认已被取代的库（如新项目避免直接用 `moment`、`request`、`lodash` 等）。
 
-**引入判定**：是否引入某个库，依据下表「引入要求」列判断——
+**引入判定**：是否引入某个库，依据「引入要求」判断——
+- **必须引入**：能**大幅简化代码**或 API **明显更好、更不易出错**（如 `zod`、`typer`、`pydantic`），作为默认选择。
+- **按需引入**：与系统库差别不大、仅有性能或便利收益（如 `orjson`、`picocolors`），仅在确有需求时引入，否则优先用标准库。
 
-- **必须引入**：相比系统库/手写能**大幅简化代码**，或其 API 设计**明显更好、更易理解、更不易出错**（如 `zod`、`typer`、`pydantic`）。这类库应作为默认选择。
-- **按需引入**：接口与系统库差别不大，主要收益是**性能或便利**（如 `orjson`、`picocolors`）。仅在确有需求（如性能瓶颈、特定场景）时才引入，否则优先用标准库，避免不必要的依赖。
-
-#### JavaScript / TypeScript
-
-| 场景 | 推荐库 | 引入要求 | 说明 |
-| --- | --- | --- | --- |
-| 路径操作 | [`pathe`](https://github.com/unjs/pathe) | 必须 | 跨平台一致，避免 Windows/POSIX 分隔符差异。 |
-| 错误处理 | [`neverthrow`](https://github.com/supermacro/neverthrow) | 必须 | 用 `Result` 类型显式处理错误，避免隐式异常控制流。 |
-| 日期 / 时间 | [`Temporal`](https://github.com/tc39/proposal-temporal) | 必须 | 替代易错的原生 `Date`。 |
-| 运行时类型校验 / Schema | [`zod`](https://github.com/colinhacks/zod) | 必须 | 校验外部输入（API、表单、配置），并推导 TS 类型。 |
-| HTTP 请求 | [`ofetch`](https://github.com/unjs/ofetch) | 按需 | `fetch` 增强：自动解析、错误处理、重试。 |
-| 命令行接口 | [`commander`](https://github.com/tj/commander.js) / [`citty`](https://github.com/unjs/citty) | 必须 | 通用选 `commander`，unjs/极简选 `citty`。 |
-| 环境变量 | [`dotenv`](https://github.com/motdotla/dotenv) | 按需 | 从 `.env` 加载，配合 `zod` 校验。 |
-| 工具函数 | [`es-toolkit`](https://github.com/toss/es-toolkit) | 按需 | 替代 lodash，体积更小、原生 TS。 |
-| 测试 | [`vitest`](https://github.com/vitest-dev/vitest) | 必须 | 原生支持 ESM/TS。 |
-| 日志 | [`pino`](https://github.com/pinojs/pino) | 按需 | 结构化 JSON 日志。 |
-| 唯一 ID | [`nanoid`](https://github.com/ai/nanoid) | 按需 | 简单场景可直接用 `crypto.randomUUID()`。 |
-| 数据库 / ORM | [`drizzle-orm`](https://github.com/drizzle-team/drizzle-orm) | 必须 | TS 原生、类型安全。 |
-| 文件 glob 匹配 | [`tinyglobby`](https://github.com/SuperchupuDev/tinyglobby) | 按需 | 比 `glob`/`fast-glob` 更轻。 |
-| Lint / 格式化 | [`biome`](https://github.com/biomejs/biome) | 必须 | 一体化；需丰富插件规则时改用 `eslint`(flat config) + `prettier`。 |
-| 子进程 / 命令执行 | [`execa`](https://github.com/sindresorhus/execa) | 按需 | 替代原生 `child_process`。 |
-| 终端美化 / Spinner | [`picocolors`](https://github.com/alexeyraspopov/picocolors) / [`ora`](https://github.com/sindresorhus/ora) | 按需 | 着色用 `picocolors`，加载动画用 `ora`。 |
-| 异步并发控制 | [`p-limit`](https://github.com/sindresorhus/p-limit) | 按需 | 限制 Promise 并发数。 |
-
-#### Python
-
-| 场景 | 推荐库 | 引入要求 | 说明 |
-| --- | --- | --- | --- |
-| 路径操作 | [`pathlib`](https://docs.python.org/3/library/pathlib.html) | 必须 | 用 `Path`，不用 `os.path` 字符串拼接。 |
-| 命令行接口 | [`typer`](https://github.com/fastapi/typer) | 必须 | 基于类型注解，替代 `argparse`。 |
-| 数据校验 / 模型 | [`pydantic`](https://github.com/pydantic/pydantic) | 必须 | 基于类型注解做校验与序列化。 |
-| 配置管理 | [`pydantic-settings`](https://github.com/pydantic/pydantic-settings) | 必须 | 从环境变量 / `.env` 加载并校验。 |
-| HTTP 请求 | [`httpx`](https://github.com/encode/httpx) | 必须 | 同步/异步统一，替代 `requests` + `aiohttp`。 |
-| 日期 / 时间 | [`pendulum`](https://github.com/python-pendulum/pendulum) | 按需 | 时区友好；简单场景用 `datetime` + `zoneinfo`。 |
-| 终端输出 / 富文本 | [`rich`](https://github.com/Textualize/rich) | 按需 | 表格、进度条、彩色输出。 |
-| 日志 | [`loguru`](https://github.com/Delgan/loguru) | 按需 | 替代繁琐的 `logging` 配置。 |
-| 测试 | [`pytest`](https://github.com/pytest-dev/pytest) | 必须 | 配合 fixture 与参数化。 |
-| 重试 | [`tenacity`](https://github.com/jd/tenacity) | 必须 | 声明式重试（退避、超时、条件）。 |
-| Web / API 框架 | [`fastapi`](https://github.com/fastapi/fastapi) | 必须 | 基于类型注解与 `pydantic`，异步。 |
-| 包 / 环境管理 | [`uv`](https://github.com/astral-sh/uv) | 必须 | 替代 `pip` + `venv`。 |
-| 代码格式化 / Lint | [`ruff`](https://github.com/astral-sh/ruff) | 必须 | 替代 `flake8` + `black` + `isort`。 |
-| 数据库 / ORM | [`sqlalchemy`](https://github.com/sqlalchemy/sqlalchemy) / [`sqlmodel`](https://github.com/fastapi/sqlmodel) | 必须 | 复杂查询/生产用 `sqlalchemy` 2.0；配 FastAPI、需类型安全模型用 `sqlmodel`。 |
-| 静态类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 必须 | 基于类型注解做静态检查。 |
-| 数据处理 / DataFrame | [`polars`](https://github.com/pola-rs/polars) | 按需 | 性能优先用 `polars`；需兼容既有 `pandas` 生态用 `pandas`。 |
-| 任务队列 / 后台任务 | [`celery`](https://github.com/celery/celery) / [`arq`](https://github.com/python-arq/arq) | 必须 | `arq` 为轻量 asyncio 方案。 |
-| 子进程 / 命令执行 | 标准库 [`subprocess`](https://docs.python.org/3/library/subprocess.html) | 标准库 | 用 `subprocess.run`；避免 `sh` 等不支持 Windows 的库。 |
-| 序列化 / 高性能 JSON | [`orjson`](https://github.com/ijl/orjson) | 按需 | 仅性能敏感时引入，否则用标准库 `json`。 |
-
-> 注：以上均为截至当前现代化、主流、积极维护的推荐默认选项。若项目已有等价的成熟方案，沿用现有方案即可，保持技术栈一致性优先；随时间推移请定期复核各库的维护状态，及时替换已停更的依赖。
+**JS/TS 与 Python 的分场景选型明细表见** [`.agent/libraries.md`](./.agent/libraries.md)（按需查阅，不必每次加载）。
 
 ### 2. 使用现代语言版本与语法
 
@@ -123,39 +76,7 @@
 
 ### 3. 统一工具链
 
-**核心原则**：每种语言使用统一、现代、高性能的工具链，覆盖包管理、格式化、Lint、类型检查与测试；工具配置纳入版本控制，本地与 CI 使用一致的命令与版本，保证结果可复现。
-
-**通用要求**：
-
-- 工具配置文件（如 `package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`）必须提交到仓库；不依赖个人本地环境。
-- 关键检查（格式化、Lint、类型检查、测试）应可一键运行，并在 CI 与提交前（pre-commit）强制执行。
-- 优先选择**速度快、配置少、能合并多职责**的工具，减少工具碎片化。
-
-#### JavaScript / TypeScript
-
-| 用途 | 工具 | 说明 |
-| --- | --- | --- |
-| 包管理 | [`pnpm`](https://github.com/pnpm/pnpm) | 原生支持 workspace；提交 `pnpm-lock.yaml`。 |
-| Lint + 格式化 | [`biome`](https://github.com/biomejs/biome) | 一体化；需丰富插件时退回 `eslint` + `prettier`。 |
-| 类型检查 | `tsc --noEmit` | `strict: true`。 |
-| 测试 | [`vitest`](https://github.com/vitest-dev/vitest) | 统一单测与覆盖率。 |
-| 构建 / 打包 | [`tsup`](https://github.com/egoist/tsup) / [`tsdown`](https://github.com/rolldown/tsdown) | 库用零配置打包；应用按框架自带构建（Vite 等）。 |
-| 直接运行 TS | [`tsx`](https://github.com/privatenumber/tsx) | 免编译执行 `.ts`。 |
-
-#### Python
-
-| 用途 | 工具 | 说明 |
-| --- | --- | --- |
-| 包 / 环境 / 版本管理 | [`uv`](https://github.com/astral-sh/uv) | 管理依赖、虚拟环境与 Python 版本；提交 `uv.lock`。 |
-| Lint + 格式化 | [`ruff`](https://github.com/astral-sh/ruff) | `ruff check` + `ruff format`，替代 `flake8` + `black` + `isort`。 |
-| 类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 开启 strict。 |
-| 测试 | [`pytest`](https://github.com/pytest-dev/pytest) | 配合 `pytest-cov` 覆盖率。 |
-
-#### 提交前检查（pre-commit）
-
-- JS/TS：用 [`husky`](https://github.com/typicode/husky) + [`lint-staged`](https://github.com/lint-staged/lint-staged) 在提交前对暂存文件跑 `biome` 与 `tsc`。
-- Python：用 [`pre-commit`](https://github.com/pre-commit/pre-commit) 框架挂载 `ruff`、`mypy` 等钩子。
-- CI 中重复执行同一套检查（格式化校验、Lint、类型检查、测试），确保与本地一致。
+工具链明细（JS/TS 与 Python 的包管理、Lint、类型检查、测试、构建、pre-commit）见 [`.agent/toolchain.md`](./.agent/toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`。
 
 ## 二、编码实践
 
@@ -253,114 +174,11 @@
 
 ## 三、项目与工程化
 
-### 1. 项目结构与组织
-
-**核心原则**：结构按功能而非技术分层组织；目录可预测、职责单一、入口清晰，便于定位与扩展。
-
-- **标准目录布局**：源码放 `src/`、脚本放 `scripts/`、文档放 `docs/`；配置文件统一放仓库根。测试就近放 `*.test.ts` / `test_*.py` 或集中放 `tests/`，团队内统一其一。
-- **按功能分模块**：优先按业务领域/功能切分目录（feature-based），而非把 controllers/services/utils 等技术层各自堆成大杂烩。
-- **单包 vs monorepo**：单一职责项目用单包；多个可独立发布的包用 monorepo（JS 用 `pnpm` workspace，Python 用 `uv` workspace）。
-- **文件职责单一**：一个文件聚焦一个模块/类/功能；文件过大（经验值数百行）即按职责拆分。
-- **入口清晰**：明确程序入口（`src/index.ts` / `src/main.py` 或 `__main__.py`），对外 API 通过入口/`index` 统一导出（配合「编码实践 · 函数与模块设计」的「明确公共 API」）。
-
-### 2. 配置与环境管理
-
-**核心原则**：配置集中声明、启动即校验、按环境注入；代码不散落读取裸环境变量。
-
-- **配置集中且校验**：所有配置集中定义并在启动时校验——JS 用 `zod` 解析 `process.env`，Python 用 `pydantic-settings`；校验失败立即 fail-fast 报错退出。
-- **分层来源**：优先级「默认值 < 配置文件 < 环境变量」；多环境（dev/staging/prod）通过环境变量切换，不在代码里散落 `if env === 'prod'` 判断。
-- **`.env` 约定**：本地用 `.env`（不提交），仓库提供 `.env.example` 列出所有必填项与说明。
-- **必填与默认**：明确区分必填项（缺失即报错）与可选项（有合理默认值）；类型在 Schema 中声明。
-- **配置不可变**：启动后配置视为只读，集中通过一个 typed config 对象访问，不在各处直接读 `process.env` / `os.environ`。
-
-### 3. 日志与可观测性
-
-**核心原则**：日志是排障的一手证据；用结构化日志、合理分级，带足上下文且不泄漏敏感信息。
-
-- **用结构化日志库**：JS 用 `pino`，Python 用 `loguru`；禁止用 `console.log` / `print` 做正式日志（仅临时调试可用，提交前清理）。
-- **日志级别约定**：`debug`（开发细节）/`info`（关键流程节点）/`warn`（可恢复异常）/`error`（失败需关注）；生产默认 `info`。
-- **结构化字段**：输出 JSON 结构化日志并带上下文字段（请求 ID、用户 ID、模块名），便于检索；不靠拼接字符串。
-- **不在热路径滥打日志**：避免在循环/高频调用里打 `info`，防止刷屏与性能损耗。
-- **错误日志带上下文**：记录错误时带上原始错误与堆栈（配合「编码实践 · 类型安全与错误处理」的「保留上下文」）。
-- **不记敏感信息**：日志不输出口令、令牌、个人隐私数据。
+项目结构、配置与环境管理、日志与可观测性的明细见 [`.agent/project.md`](./.agent/project.md)（搭项目初期或调整结构/配置/日志时查阅）。要点：按功能分模块、文件职责单一；配置集中声明并启动即校验（`zod`/`pydantic-settings`），不散落读裸环境变量；用结构化日志库（`pino`/`loguru`）、合理分级、不泄漏敏感信息。
 
 ## 四、版本与协作
 
-### 1. 提交规范（Conventional Commits）
-
-**核心原则**：所有提交遵循 [Conventional Commits](https://www.conventionalcommits.org/) 规范，使提交历史可读、可机器解析，并能自动驱动版本号与变更日志。
-
-- 提交信息格式：`<type>(<scope>): <subject>`，必要时附 body 与 footer。
-- 常用 `type`：
-  - `feat`：新功能（触发 minor 版本）。
-  - `fix`：缺陷修复（触发 patch 版本）。
-  - `docs` / `style` / `refactor` / `perf` / `test` / `build` / `ci` / `chore`：文档、格式、重构、性能、测试、构建、CI、杂项。
-- **破坏性变更**：在 `type` 后加 `!`（如 `feat!:`）或在 footer 写 `BREAKING CHANGE:`，触发 major 版本。
-- subject 用祈使句、简洁明确；一次提交聚焦单一逻辑变更。
-- 用工具强制校验：[`commitlint`](https://github.com/conventional-changelog/commitlint)（配合 husky `commit-msg` 钩子）；交互式提交可用 [`commitizen`](https://github.com/commitizen/cz-cli)。
-
-### 2. 语义化版本（SemVer）
-
-**核心原则**：版本号遵循 [语义化版本 2.0.0](https://semver.org/)：`MAJOR.MINOR.PATCH`。
-
-- **MAJOR**：不兼容的 API 变更（破坏性变更）。
-- **MINOR**：向后兼容的新功能。
-- **PATCH**：向后兼容的缺陷修复。
-- 预发布版本用 `-alpha`/`-beta`/`-rc`（如 `1.2.0-rc.1`）。
-- 版本号由 Conventional Commits 自动推导，不手动随意 bump。
-- 版本号是发布事实的唯一来源：JS 以 `package.json` 的 `version` 为准，Python 以 `pyproject.toml` 的 `version` 为准，并与 Git tag（`vX.Y.Z`）保持一致。
-
-### 3. 变更日志（Changelog）
-
-**核心原则**：维护 `CHANGELOG.md` 记录每个版本的变更，面向使用者，遵循 [Keep a Changelog](https://keepachangelog.com/) 风格。
-
-- 按版本分组，分类列出 `Added` / `Changed` / `Fixed` / `Deprecated` / `Removed` / `Security`，并标注发布日期。
-- 由 Conventional Commits **自动生成**，避免手写遗漏：
-  - JS/TS：[`changesets`](https://github.com/changesets/changesets)（推荐，适合 monorepo）或 `release-please`。
-  - Python：[`towncrier`](https://github.com/twisted/towncrier) 或基于 commits 的 `git-cliff`。
-- 破坏性变更必须在 changelog 中显著标注，并说明迁移方式。
-
-### 4. 依赖治理
-
-**核心原则**：依赖必须**可复现、可追溯、可审计**；锁定版本、定期升级、主动扫描安全漏洞，避免供应链风险与依赖腐化。
-
-- **锁文件必须提交**：JS 提交 `pnpm-lock.yaml`，Python 提交 `uv.lock`；CI 安装时校验锁文件一致性（`pnpm install --frozen-lockfile`、`uv sync --locked`），禁止安装时静默更新。
-- **版本约束清晰**：直接依赖在 `package.json` / `pyproject.toml` 中声明明确范围；运行版本以锁文件为准。
-
-**自动升级**：
-
-- **工具**：统一使用 [Renovate](https://github.com/renovatebot/renovate)（推荐，跨 JS/Python/Docker/CI 等生态统一配置）；GitHub 纯仓库也可用 Dependabot。配置文件（`renovate.json` / `.github/dependabot.yml`）入库。
-- **调度**：每周固定窗口批量提交升级 PR（如 `schedule: ["before 6am on monday"]`），并设置并发上限（`prConcurrentLimit`）避免 PR 风暴。
-- **分级合并策略**：
-  - `patch` / `devDependencies`：CI 通过后**自动合并**（`automerge: true`）。
-  - `minor`（生产依赖）：自动开 PR，至少 1 人评审后合并。
-  - `major` / 破坏性升级：必须人工评审，附迁移说明与回归测试。
-- **聚合与降噪**：非主要版本升级按生态分组提交（`groupName`），减少 PR 数量；锁文件维护（`lockFileMaintenance`）每周单独跑。
-- **安全升级优先**：开启漏洞告警驱动的升级（`vulnerabilityAlerts`），安全补丁不受常规调度限制，第一时间提 PR。
-- **质量门禁**：所有升级 PR 必须通过完整 CI（Lint、类型检查、测试、构建）才允许合并；自动合并同样以 CI 全绿为前提。
-
-**安全审计**：
-
-- **CI 强制扫描**：每次 PR 与主分支构建都执行依赖漏洞扫描；扫描失败（达到阈值）**阻断合并**。
-  - JS/TS：`pnpm audit --audit-level=high`（或 `osv-scanner`，覆盖更全的漏洞源）。
-  - Python：[`pip-audit`](https://github.com/pypa/pip-audit)（针对 `uv.lock` 导出的依赖），或同样用 `osv-scanner`。
-- **阻断阈值**：`high` 及以上（CVSS ≥ 7.0）漏洞必须修复或显式豁免后方可合并；`moderate` 及以下记录并跟踪。
-- **修复时限（SLA）**：`critical` 24 小时内、`high` 7 天内、`moderate` 30 天内处理（升级、打补丁或替换依赖）。
-- **豁免机制**：确无法立即修复时，登记白名单（如 `pip-audit --ignore-vuln`、`pnpm` overrides）并注明原因、责任人与复审日期；豁免须经评审，禁止无说明的长期忽略。
-- **供应链加固**：CI 使用最小权限 token；锁文件保证可复现安装；定期运行 SCA 工具生成 SBOM（如 CycloneDX），便于追溯。
-- **依赖精简**：定期清理未使用依赖（`knip` / `depcheck`、`deptry`）；引入新依赖前对照「技术栈与工具基线 · 优先复用成熟的开源组件」的选型标准与引入判定。
-- **许可证合规**：避免引入与项目协议冲突的依赖（如 GPL 进入闭源项目），必要时用工具校验 License。
-
-### 5. CI/CD 流水线
-
-**核心原则**：CI 是质量底线，与本地检查一致、快速反馈、全绿才合并；发布全程自动化、可复现。
-
-- **CI 必跑检查清单**：每次 PR 与主分支构建依次执行——安装（锁文件校验）→ 格式校验 → Lint → 类型检查 → 测试（带覆盖率）→ 构建 → 依赖漏洞扫描；任一失败即阻断合并。
-- **与本地一致**：CI 命令与本地、pre-commit 完全一致（见「技术栈与工具基线 · 统一工具链」），避免「本地过、CI 挂」。
-- **快速反馈**：合理拆分并行任务、利用依赖与构建缓存缩短流水线时长；快检查（Lint/类型）前置。
-- **发布自动化**：合并到主分支后由 Conventional Commits 驱动版本号与 changelog（`changesets` / `release-please` / `towncrier`），自动打 tag 并发布产物。
-- **最小权限与可复现**：CI 凭据按最小必要权限授予，安装用 `--frozen-lockfile` / `--locked` 保证可复现。
-- **分支保护**：主分支要求 PR + CI 全绿 + 至少 1 人评审方可合并，禁止直接推送。
+提交规范、语义化版本、变更日志、依赖治理、CI/CD 流水线的明细见 [`.agent/versioning.md`](./.agent/versioning.md)（做提交、发版、配 CI、治理依赖时查阅）。要点：提交遵循 Conventional Commits；版本遵循 SemVer 并由 commit 自动推导；锁文件必须入库（`pnpm-lock.yaml` / `uv.lock`）；CI 必须跑「格式 → Lint → 类型 → 测试 → 构建 → 漏洞扫描」且全绿才合并。
 
 ## 五、与 AI 协作
 
