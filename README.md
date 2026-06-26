@@ -10,6 +10,7 @@
 - `guidelines/.agent/` —— **按需查阅的明细**，由主文件用相对路径链接引用：
   - `libraries.md` —— JS/Python 分场景库选型表。
   - `toolchain.md` —— 统一工具链（包管理、Lint、类型检查、测试、构建、pre-commit）。
+  - `coding-practices.md` —— 编码实践完整要点（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全）。
   - `project.md` —— 项目与工程化（项目结构、配置与环境管理、日志与可观测性）。
   - `versioning.md` —— 版本与协作（提交规范、SemVer、changelog、依赖治理、CI/CD）。
 - `CLAUDE.md`（根目录）—— 本仓库的简短指引，指向产物与本说明。
