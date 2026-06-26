@@ -59,7 +59,7 @@
 **核心原则**：CI 是质量底线，与本地一致、快速反馈、全绿才合并；发布自动化、可复现。
 
 - **必跑检查清单**：安装（锁文件校验）→ 格式校验 → Lint → 类型检查 → 测试（带覆盖率）→ 构建 → 漏洞扫描；任一失败即阻断。
-- **与本地一致**：CI 命令与本地、pre-commit 一致（见主规范「统一工具链」），避免「本地过、CI 挂」。
+- **与本地一致**：CI 命令与本地、pre-commit 一致（见 [`toolchain.md`](./toolchain.md)），避免「本地过、CI 挂」。
 - **快速反馈**：拆分并行任务、用缓存缩短时长；快检查（Lint/类型）前置。
 - **发布自动化**：合并主分支后由 Conventional Commits 驱动版本与 changelog（`changesets`/`release-please`/`towncrier`），自动打 tag 并发布。
 - **最小权限与可复现**：CI 凭据最小权限，安装用 `--frozen-lockfile`/`--locked`。
