@@ -18,7 +18,7 @@
 
 - **MAJOR** 破坏性变更、**MINOR** 向后兼容新功能、**PATCH** 向后兼容修复；预发布用 `-alpha`/`-beta`/`-rc`。
 - 版本号由 Conventional Commits 自动推导，不手动随意 bump。
-- 版本号唯一来源：JS 看 `package.json`、Python 看 `pyproject.toml`、Go 以 Git tag `vX.Y.Z` 为准（库无独立版本文件），并与 Git tag（`vX.Y.Z`）一致。
+- 版本号唯一来源并与 Git tag（`vX.Y.Z`）一致：JS 看 `package.json`、Python 看 `pyproject.toml`、Go 直接以 Git tag 为准（无独立版本文件）。
 - **Go 模块版本特殊约定**：major 版本 ≥ 2 时，模块路径须带 `/vN` 后缀（如 `example.com/foo/v2`）并对应 `vN.x.x` tag，否则下游无法正确升级。
 
 ## 3. 变更日志（Changelog）

@@ -3,7 +3,7 @@
 > 本文件是主规范「技术栈与工具基线 · 统一工具链」的明细，在搭项目脚手架、配工具时查阅。
 >
 > **核心原则**：用统一现代的工具链，配置入库，本地与 CI 命令一致、结果可复现。
-> **通用要求**：工具配置文件（`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json` 等）必须入库；关键检查可一键运行，并在 CI 与 pre-commit 强制执行；优先选速度快、配置少、能合并多职责的工具。
+> **通用要求**：工具配置文件（`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`、`go.mod`、`.golangci.yml` 等）必须入库；关键检查可一键运行，并在 CI 与 pre-commit 强制执行；优先选速度快、配置少、能合并多职责的工具。
 
 ## JavaScript / TypeScript
 
