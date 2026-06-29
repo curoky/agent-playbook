@@ -25,8 +25,21 @@
 | 类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 开启 strict。 |
 | 测试 | [`pytest`](https://github.com/pytest-dev/pytest) | 配合 `pytest-cov` 覆盖率。 |
 
+## Go
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 依赖 / 版本管理 | 标准 `go mod` + `toolchain` 指令 | 提交 `go.mod` 与 `go.sum`；`go mod tidy` 保持依赖整洁。 |
+| 格式化 | `gofmt` / [`goimports`](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) | `goimports` 兼做 import 分组排序；格式不入 review 讨论。 |
+| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | v2.x；`.golangci.yml` 入库，聚合 `govet`、`staticcheck`、`errcheck` 等。 |
+| 静态检查 | `go vet` / [`staticcheck`](https://github.com/dominikh/go-tools) | `go vet` 基础检查；`staticcheck` 已含于 `golangci-lint`。 |
+| 测试 + 覆盖率 | 标准 `go test` | `go test -race -cover ./...`，开启竞态检测。 |
+| 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | `govulncheck ./...`，CI 强制。 |
+| 构建 | 标准 `go build` | 交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
+
 ## 提交前检查（pre-commit）
 
 - JS/TS：用 [`husky`](https://github.com/typicode/husky) + [`lint-staged`](https://github.com/lint-staged/lint-staged) 在提交前对暂存文件跑 `biome` 与 `tsc`。
 - Python：用 [`pre-commit`](https://github.com/pre-commit/pre-commit) 框架挂载 `ruff`、`mypy` 等钩子。
-- CI 中重复执行同一套检查（格式化校验、Lint、类型检查、测试），确保与本地一致。
+- Go：用 `pre-commit` 框架或 Makefile 在提交前跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。
+- CI 中重复执行同一套检查（格式化校验、Lint、类型检查/vet、测试），确保与本地一致。

@@ -54,4 +54,28 @@
 | 子进程 / 命令执行 | 标准库 [`subprocess`](https://docs.python.org/3/library/subprocess.html) | 标准库 | 用 `subprocess.run`；避免 `sh` 等不支持 Windows 的库。 |
 | 序列化 / 高性能 JSON | [`orjson`](https://github.com/ijl/orjson) | 按需 | 仅性能敏感时引入，否则用标准库 `json`。 |
 
+## Go
+
+> **标准库优先**：Go 标准库覆盖度高，下表「标准库」项一律优先使用，仅在确有缺口时引入第三方库。
+
+| 场景 | 推荐库 | 引入要求 | 说明 |
+| --- | --- | --- | --- |
+| HTTP 服务 / 路由 | 标准库 [`net/http`](https://pkg.go.dev/net/http)（1.22+ 增强路由） | 标准库 | 简单服务直接用；复杂中间件/路由再考虑 [`chi`](https://github.com/go-chi/chi) 或 [`echo`](https://github.com/labstack/echo)。 |
+| 日志 | 标准库 [`log/slog`](https://pkg.go.dev/log/slog) | 标准库 | 结构化日志，替代第三方日志门面；需极致性能再看 [`zap`](https://github.com/uber-go/zap)。 |
+| 错误处理 | 标准库 [`errors`](https://pkg.go.dev/errors) | 标准库 | `errors.Is`/`As` + `fmt.Errorf("...: %w")`；不用 `github.com/pkg/errors`。 |
+| 切片 / 映射操作 | 标准库 [`slices`](https://pkg.go.dev/slices) / [`maps`](https://pkg.go.dev/maps) | 标准库 | 替代手写循环与 `golang.org/x/exp/*`。 |
+| 命令行接口 | [`cobra`](https://github.com/spf13/cobra) | 按需 | 复杂多级子命令用 `cobra`；极简场景用标准库 `flag`。 |
+| 配置管理 | [`viper`](https://github.com/spf13/viper) / [`kelseyhightower/envconfig`](https://github.com/kelseyhightower/envconfig) | 必须 | 多来源配置用 `viper`，纯环境变量映射用 `envconfig`，启动即校验。 |
+| 数据校验 | [`go-playground/validator`](https://github.com/go-playground/validator) | 必须 | 基于 struct tag 校验外部输入。 |
+| 数据库 / SQL | [`sqlc`](https://github.com/sqlc-dev/sqlc) / [`sqlx`](https://github.com/jmoiron/sqlx) | 必须 | `sqlc` 由 SQL 生成类型安全代码（推荐）；轻量增强用 `sqlx`；需完整 ORM 用 [`gorm`](https://github.com/go-gorm/gorm)。 |
+| 数据库迁移 | [`golang-migrate`](https://github.com/golang-migrate/migrate) | 必须 | 版本化管理 schema 迁移。 |
+| 并发组 / 错误聚合 | [`golang.org/x/sync/errgroup`](https://pkg.go.dev/golang.org/x/sync/errgroup) | 必须 | 并发任务统一等待与首错取消，替代手写 `WaitGroup` + channel。 |
+| 测试断言 | [`testify`](https://github.com/stretchr/testify) | 按需 | `require`/`assert` 简化断言；优先标准库 `testing` 表驱动。 |
+| Mock 生成 | [`uber-go/mock`](https://github.com/uber-go/mock) | 按需 | 由接口生成 mock（`mockgen`），替代已归档的 `golang/mock`。 |
+| HTTP 客户端重试 | 标准库 `net/http` + [`hashicorp/go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 按需 | 标准库客户端够用，需退避重试时引入。 |
+| 唯一 ID | [`google/uuid`](https://github.com/google/uuid) | 按需 | 生成 UUID。 |
+| 依赖注入 | [`google/wire`](https://github.com/google/wire) | 按需 | 编译期 DI；小项目手动注入即可，避免过度设计。 |
+| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须 | 聚合多 linter，见 [`toolchain.md`](./toolchain.md)。 |
+| 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | 必须 | 官方漏洞扫描，CI 强制。 |
+
 > 注：以上为截至当前的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
