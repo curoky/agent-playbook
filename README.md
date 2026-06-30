@@ -12,7 +12,8 @@
 | --- | --- | --- |
 | [`main.md`](./.trae/rules/main.md) | 始终生效（`alwaysApply: true`） | **主索引**：五大领域导览 + 高频遵守的核心原则与关键禁令 |
 | [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 AI 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
-| [`coding-practices.md`](./.trae/rules/coding-practices.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 语言版本锁定与语法（推荐/禁止写法）+ 编码实践完整要点（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
+| [`coding-practices/common.md`](./.trae/rules/coding-practices/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
+| [`coding-practices/{js,python,go,cpp}.md`](./.trae/rules/coding-practices/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**特有写法**：版本锁定与语法（§0）+ 各主题该语言的具体做法 |
 | [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
 | [`versioning.md`](./.trae/rules/versioning.md) | 智能生效（`description`） | 提交规范、SemVer、changelog、依赖治理、CI/CD |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的规范 |
@@ -30,8 +31,8 @@
 
 | 领域 | 定位（管什么） | 主要内容 | 主要承载文件 |
 | --- | --- | --- | --- |
-| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `tech-stack/`（语法明细在 `coding-practices.md` §0） |
-| 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `coding-practices.md` |
+| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `tech-stack/`（语法明细在 `coding-practices/{语言}.md` §0） |
+| 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `coding-practices/`（`common.md` 通用 + 分语言文件） |
 | 三、项目与工程化 | 项目怎么搭 | 项目结构、配置与环境管理、日志与可观测性 | `main.md` + `project.md` |
 | 四、版本与协作 | 怎么协作发布 | 提交规范、SemVer、changelog、依赖治理、CI/CD | `main.md` + `versioning.md` + `git-commit-message.md` |
 | 五、与 AI 协作 | AI 如何工作 | 思考在先、简单优先、外科式改动、目标驱动、善用 Trae 上下文与工具、沟通交付、设计文档与规则同步（行为准则，优先级最高） | `ai-collaboration.md` |

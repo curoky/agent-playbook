@@ -39,7 +39,7 @@ alwaysApply: true
 | C++ 编译器 | GCC 12 / Clang 15 / MSVC 19.3x | 最新稳定版（GCC 14+ / Clang 18+） |
 | Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
 
-各语言的版本锁定方式、推荐语法与禁止写法见 [`coding-practices.md`](./coding-practices.md) 「§0 语言版本与语法」（编辑对应源文件时自动生效）。
+各语言的版本锁定方式、推荐语法与禁止写法见 `coding-practices/` 下的分语言文件 [`js.md`](./coding-practices/js.md)、[`python.md`](./coding-practices/python.md)、[`go.md`](./coding-practices/go.md)、[`cpp.md`](./coding-practices/cpp.md) 的「§0 语言版本与语法」（编辑对应源文件时自动生效）。
 
 ### 3. 统一工具链
 
@@ -47,7 +47,7 @@ alwaysApply: true
 
 ## 二、编码实践
 
-> 本域各主题的完整要点见 [`coding-practices.md`](./coding-practices.md)（编辑 JS/TS、Python、Go、C++ 源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
+> 本域各主题的核心原则与语言无关要点见 [`coding-practices/common.md`](./coding-practices/common.md)，各语言特有写法见同目录 [`js.md`](./coding-practices/js.md)/[`python.md`](./coding-practices/python.md)/[`go.md`](./coding-practices/go.md)/[`cpp.md`](./coding-practices/cpp.md)（编辑对应源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
 
 - **1. 命名与代码风格**：命名即文档，用完整可检索的名字（布尔加 `is`/`has` 前缀）；遵循语言惯例大小写（Go 用 `MixedCaps`、靠首字母大小写控制导出）；避免魔法值；格式全交给 `biome` / `ruff format` / `gofmt`，不手写、不在 review 讨论。
 - **2. 函数与模块设计**：单一职责、小而专一；参数超 3 个改具名对象、避免布尔陷阱参数；核心逻辑写纯函数、副作用推到边界；显式导出最小公共 API（TS 具名导出、Python `__all__`、Go 靠首字母大写控制导出且接口宜小）；依赖抽象而非实现，避免循环依赖。
