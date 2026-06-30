@@ -55,6 +55,8 @@ alwaysApply: false
 ## 5. 性能与优化
 
 - **基准可复现**：关键算法/接口用 `pytest-benchmark` 写 benchmark，优化前后对比并纳入回归。
+- **绕开 GIL 的选择**：CPU 密集用 `multiprocessing`/`ProcessPoolExecutor`（或 3.13+ free-threaded、`Cython`/`numpy` 向量化），不用线程；IO 密集才用 `asyncio`/线程。
+- **热点数值计算向量化**：大批量数值运算优先 `numpy`/`polars` 向量化，避免 Python 层逐元素 `for` 循环。
 
 ## 6. 注释与文档
 

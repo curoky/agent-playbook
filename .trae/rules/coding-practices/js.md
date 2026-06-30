@@ -54,6 +54,8 @@ alwaysApply: false
 ## 5. 性能与优化
 
 - **基准可复现**：关键算法/接口用 `vitest bench` 写 benchmark，优化前后对比并纳入回归。
+- **CPU 密集放 worker**：阻塞超过个位数毫秒的同步计算（大 JSON、加解密、图像处理）移到 `worker_threads`/`Worker`，不卡事件循环。
+- **React memo 有据再加**：`useMemo`/`memo` 仅在「该计算被 profiler 证明昂贵」或「引用稳定性影响下游渲染」时加，不默认包裹，避免缓存开销反而拖慢。
 
 ## 6. 注释与文档
 
