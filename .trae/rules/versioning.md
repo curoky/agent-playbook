@@ -38,7 +38,7 @@ alwaysApply: false
 
 **核心原则**：依赖**可复现、可追溯、可审计**；锁定版本、定期升级、主动扫漏洞。
 
-- **锁文件必须提交**：JS `pnpm-lock.yaml`、Python `uv.lock`、Go `go.mod` + `go.sum`；CI 安装校验一致性（`pnpm install --frozen-lockfile`、`uv sync --locked`、`go mod verify` + `go mod tidy` 后无 diff），禁静默更新。
+- **锁文件必须提交**：JS `pnpm-lock.yaml`、Python `uv.lock`、Go `go.mod` + `go.sum`、C++ Bazel 的 `MODULE.bazel` + `MODULE.bazel.lock`；CI 安装校验一致性（`pnpm install --frozen-lockfile`、`uv sync --locked`、`go mod verify` + `go mod tidy` 后无 diff，C++ 用 `bazel mod deps --lockfile_mode=error` 校验锁文件一致），禁静默更新。
 - **版本约束清晰**：直接依赖声明明确范围，运行版本以锁文件为准。
 
 **自动升级**：
@@ -52,7 +52,7 @@ alwaysApply: false
 
 **安全审计**：
 
-- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断合并。JS/TS 用 `pnpm audit --audit-level=high`（或 `osv-scanner`），Python 用 [`pip-audit`](https://github.com/pypa/pip-audit)（或 `osv-scanner`），Go 用 [`govulncheck ./...`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)（或 `osv-scanner`）。
+- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断合并。JS/TS 用 `pnpm audit --audit-level=high`（或 `osv-scanner`），Python 用 [`pip-audit`](https://github.com/pypa/pip-audit)（或 `osv-scanner`），Go 用 [`govulncheck ./...`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)（或 `osv-scanner`），C++ 用 [`osv-scanner`](https://github.com/google/osv-scanner) 扫 `MODULE.bazel.lock`。
 - **阻断阈值**：`high` 及以上（CVSS ≥ 7.0）须修复或显式豁免；`moderate` 及以下记录跟踪。
 - **修复 SLA**：`critical` 24h、`high` 7d、`moderate` 30d 内处理。
 - **豁免机制**：无法立即修复时登记白名单（`pip-audit --ignore-vuln`、`pnpm` overrides）并注明原因/责任人/复审日期，须经评审。

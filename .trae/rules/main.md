@@ -8,7 +8,7 @@ alwaysApply: true
 
 > 本文件与 [`ai-collaboration.md`](./ai-collaboration.md) 为「始终生效」规则；技术栈、工具链、编码实践、项目工程化、版本协作的明细按场景生效（见各文件 frontmatter），无需全程加载，Trae 会按对话内容与所涉文件自动携带。
 >
-> 具体技术栈以 **JavaScript/TypeScript**、**Python** 与 **Go** 为准；其他语言沿用各领域中与语言无关的通用原则，并套用对应生态的等价工具。
+> 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用各领域中与语言无关的通用原则，并套用对应生态的等价工具。
 
 ## 一、技术栈与工具基线
 
@@ -21,7 +21,7 @@ alwaysApply: true
 - **避免停更/被取代的库**：如新项目不直接用 `moment`、`request`、`lodash`（JS）、`github.com/pkg/errors`（Go，改用标准库 `errors` + `%w`）等。
 - **引入判定**：能**大幅简化代码**或 API **明显更好、更不易出错**的（如 `zod`、`typer`、`pydantic`）作为默认选择；与标准库差别不大、仅有性能/便利收益的（如 `orjson`、`picocolors`）按需引入，否则优先标准库。**Go 尤其推崇「标准库优先」**，引入第三方库前先确认标准库（`net/http`、`encoding/json`、`log/slog`、`slices`、`maps` 等）是否已够用。
 
-**分语言的选型明细表与选型判据见** [`tech-stack/libraries-js.md`](./tech-stack/libraries-js.md)、[`tech-stack/libraries-python.md`](./tech-stack/libraries-python.md)、[`tech-stack/libraries-go.md`](./tech-stack/libraries-go.md)（编辑对应语言源码时自动生效，聊选型时智能携带）。
+**分语言的选型明细表与选型判据见** [`tech-stack/libraries-js.md`](./tech-stack/libraries-js.md)、[`tech-stack/libraries-python.md`](./tech-stack/libraries-python.md)、[`tech-stack/libraries-go.md`](./tech-stack/libraries-go.md)、[`tech-stack/libraries-cpp.md`](./tech-stack/libraries-cpp.md)（编辑对应语言源码时自动生效，聊选型时智能携带）。
 
 ### 2. 使用现代语言版本与语法
 
@@ -85,13 +85,32 @@ alwaysApply: true
   - `for range n`（整数范围循环，1.22+）、`range over func`（迭代器，1.23+）等惯用法。
 - **禁止**：忽略 `error` 返回值（必须显式处理或 `_` 并写明原因）、用 `panic` 处理可预期错误（仅用于不可恢复的程序错误）、滥用空 `interface{}`/`any`（优先具体类型或泛型）、用 `ioutil.*`（已废弃，用 `os`/`io`）、裸 `goroutine` 不管理生命周期（见「异步与并发」）。
 
+#### C++
+
+| 项 | 最低版本 | 推荐版本 |
+| --- | --- | --- |
+| C++ 标准 | C++20（`-std=c++20`） | C++23（`-std=c++23`，新项目默认） |
+| 编译器 | GCC 12 / Clang 15 / MSVC 19.3x（VS 2022） | 最新稳定版（GCC 14+ / Clang 18+ / 最新 MSVC） |
+| 构建系统 | Bazel 7.x（启用 bzlmod） | 最新 Bazel（`.bazelversion` 固定，bzlmod + Bazel Central Registry 管理依赖） |
+
+- **现代 C++ 优先**：编写 RAII 风格代码，资源生命周期绑定对象；用值语义与移动语义，避免手动 `new`/`delete`。
+- **标准声明（必须显式锁定）**：在 `.bazelrc` 固定 `build --cxxopt=-std=c++23`（或 per-target `copts`），并用 `.bazelversion` 锁定 Bazel 版本；通过 `MODULE.bazel` + `MODULE.bazel.lock` 锁定外部依赖，确保团队一致。
+- 优先采用现代语法简化代码，例如：
+  - 智能指针 `std::unique_ptr`/`std::shared_ptr` + `std::make_unique`/`std::make_shared`，替代裸 `new`/`delete`（见「编码实践 · 类型安全与错误处理」的资源管理）。
+  - `auto`、结构化绑定 `auto [a, b] = ...`、范围 `for`、`if`/`switch` 初始化语句，简化样板。
+  - `std::optional`/`std::variant`/`std::expected`（C++23）表达「可能缺失/多态/可失败」，替代裸指针哨兵与错误码。
+  - `std::string_view`/`std::span` 传递只读视图，避免不必要拷贝；`constexpr`/`consteval` 把计算前移到编译期。
+  - Concepts 约束模板（替代 SFINAE）、Ranges（`std::ranges::`、视图与管道 `|`）替代手写循环与迭代器对。
+  - `<format>` 风格的格式化：默认用 [`fmt`](https://github.com/fmtlib/fmt)（`fmt::format`/`fmt::print`），替代 `printf` 与 iostream 拼接；`<chrono>` 处理时间。
+- **禁止**：裸 `new`/`delete` 与裸 `owning` 指针管理资源（用智能指针/容器/RAII）、C 风格强制转换（用 `static_cast`/`reinterpret_cast` 等具名转换）、`using namespace std;` 写在头文件或全局作用域、宏充当常量/函数（用 `constexpr`/`inline` 函数/`enum class`）、裸数组与 `strcpy`/`sprintf` 等不安全 C API（用 `std::array`/`std::vector`/`fmt::format`）、未初始化变量、在头文件定义非 `inline` 的非模板函数/全局变量。
+
 ### 3. 统一工具链
 
-工具链明细（JS/TS、Python 与 Go 的包管理、Lint、类型检查、测试、构建、pre-commit）见 [`tech-stack/toolchain.md`](./tech-stack/toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`。
+工具链明细（JS/TS、Python、Go 与 C++ 的包管理、Lint、类型检查、测试、构建、pre-commit）见 [`tech-stack/toolchain.md`](./tech-stack/toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`。
 
 ## 二、编码实践
 
-> 本域各主题的完整要点见 [`coding-practices.md`](./coding-practices.md)（编辑 JS/TS、Python、Go 源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
+> 本域各主题的完整要点见 [`coding-practices.md`](./coding-practices.md)（编辑 JS/TS、Python、Go、C++ 源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
 
 - **1. 命名与代码风格**：命名即文档，用完整可检索的名字（布尔加 `is`/`has` 前缀）；遵循语言惯例大小写（Go 用 `MixedCaps`、靠首字母大小写控制导出）；避免魔法值；格式全交给 `biome` / `ruff format` / `gofmt`，不手写、不在 review 讨论。
 - **2. 函数与模块设计**：单一职责、小而专一；参数超 3 个改具名对象、避免布尔陷阱参数；核心逻辑写纯函数、副作用推到边界；显式导出最小公共 API（TS 具名导出、Python `__all__`、Go 靠首字母大写控制导出且接口宜小）；依赖抽象而非实现，避免循环依赖。

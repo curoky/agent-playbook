@@ -8,7 +8,7 @@ alwaysApply: false
 > 本文件是主规范「技术栈与工具基线 · 统一工具链」的明细，在搭项目脚手架、配工具时查阅。
 >
 > **核心原则**：用统一现代的工具链，配置入库，本地与 CI 命令一致、结果可复现。
-> **通用要求**：工具配置文件（`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`、`go.mod`、`.golangci.yml` 等）必须入库；关键检查可一键运行，并在 CI 与 pre-commit 强制执行；优先选速度快、配置少、能合并多职责的工具。
+> **通用要求**：工具配置文件（`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`、`go.mod`、`.golangci.yml`、`MODULE.bazel`、`BUILD.bazel`、`.bazelrc`、`.bazelversion`、`.clang-format`、`.clang-tidy` 等）必须入库；关键检查可一键运行，并在 CI 与 pre-commit 强制执行；优先选速度快、配置少、能合并多职责的工具。
 
 ## JavaScript / TypeScript
 
@@ -42,9 +42,23 @@ alwaysApply: false
 | 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | `govulncheck ./...`，CI 强制。 |
 | 构建 | 标准 `go build` | 交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
 
+## C++
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 构建系统 | [`Bazel`](https://bazel.build/)（启用 bzlmod） | 用 `BUILD.bazel` 声明 target，`.bazelversion` 固定版本；`.bazelrc` 固定 `build --cxxopt=-std=c++23`。 |
+| 依赖管理 | Bazel bzlmod + [Bazel Central Registry](https://registry.bazel.build/) | `MODULE.bazel` 声明 `bazel_dep`，`MODULE.bazel.lock` 锁版本并入库；BCR 未收录的库用 `git_override`/`http_archive`。 |
+| 格式化 | [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) | `.clang-format` 入库；格式不入 review 讨论。 |
+| 静态分析 / Lint | [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) | `.clang-tidy` 入库，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines` 等；CI 强制。 |
+| 编译期检查 | 编译器 warning | 在 `.bazelrc` 配 `build --cxxopt=-Wall --cxxopt=-Wextra --cxxopt=-Wpedantic` 并视情况 `-Werror`（MSVC 用 `/W4 /WX`）。 |
+| 运行期检查 | Sanitizers | 用 `--config=asan`/`--config=ubsan`（`.bazelrc` 预置）跑 ASan/UBSan、必要时 TSan；定位内存与未定义行为。 |
+| 测试 + 覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2) | 通过 `bazel test //...` 统一运行；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
+| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 微基准，配合性能优化。 |
+
 ## 提交前检查（pre-commit）
 
 - JS/TS：用 [`husky`](https://github.com/typicode/husky) + [`lint-staged`](https://github.com/lint-staged/lint-staged) 在提交前对暂存文件跑 `biome` 与 `tsc`。
 - Python：用 [`pre-commit`](https://github.com/pre-commit/pre-commit) 框架挂载 `ruff`、`mypy` 等钩子。
 - Go：用 `pre-commit` 框架或 Makefile 在提交前跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。
-- CI 中重复执行同一套检查（格式化校验、Lint、类型检查/vet、测试），确保与本地一致。
+- C++：用 `pre-commit` 框架或 Git 钩子在提交前跑 `clang-format --dry-run -Werror`（或对暂存文件格式校验）与 `clang-tidy`；`bazel build`/`bazel test //...` 在 CI 执行。
+- CI 中重复执行同一套检查（格式化校验、Lint/静态分析、类型检查/vet、测试），确保与本地一致。
