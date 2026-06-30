@@ -16,7 +16,9 @@
 | [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
 | [`versioning.md`](./.trae/rules/versioning.md) | 智能生效（`description`） | 提交规范、SemVer、changelog、依赖治理、CI/CD |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的规范 |
-| [`tech-stack/libraries.md`](./.trae/rules/tech-stack/libraries.md) | 智能生效（`description`） | JS/Python/Go 分场景库选型表 |
+| [`tech-stack/libraries-js.md`](./.trae/rules/tech-stack/libraries-js.md) | 指定文件生效（`globs`：JS/TS）+ 智能生效（`description`） | JS/TS 分场景库选型表与选型判据 |
+| [`tech-stack/libraries-python.md`](./.trae/rules/tech-stack/libraries-python.md) | 指定文件生效（`globs`：PY）+ 智能生效（`description`） | Python 分场景库选型表与选型判据 |
+| [`tech-stack/libraries-go.md`](./.trae/rules/tech-stack/libraries-go.md) | 指定文件生效（`globs`：GO）+ 智能生效（`description`） | Go 分场景库选型表与选型判据 |
 | [`tech-stack/toolchain.md`](./.trae/rules/tech-stack/toolchain.md) | 智能生效（`description`） | 统一工具链（包管理、Lint、类型检查、测试、构建、pre-commit） |
 
 > Trae 会递归读取 `.trae/rules/` 及其子目录（最多 3 层）。拷贝到其他项目时把整个 `.trae/rules/` 目录一并带上，文件间的相对链接才不会失效。

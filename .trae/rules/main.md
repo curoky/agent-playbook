@@ -21,7 +21,7 @@ alwaysApply: true
 - **避免停更/被取代的库**：如新项目不直接用 `moment`、`request`、`lodash`（JS）、`github.com/pkg/errors`（Go，改用标准库 `errors` + `%w`）等。
 - **引入判定**：能**大幅简化代码**或 API **明显更好、更不易出错**的（如 `zod`、`typer`、`pydantic`）作为默认选择；与标准库差别不大、仅有性能/便利收益的（如 `orjson`、`picocolors`）按需引入，否则优先标准库。**Go 尤其推崇「标准库优先」**，引入第三方库前先确认标准库（`net/http`、`encoding/json`、`log/slog`、`slices`、`maps` 等）是否已够用。
 
-**JS/TS、Python 与 Go 分场景选型明细表见** [`tech-stack/libraries.md`](./tech-stack/libraries.md)（按需查阅）。
+**分语言的选型明细表与选型判据见** [`tech-stack/libraries-js.md`](./tech-stack/libraries-js.md)、[`tech-stack/libraries-python.md`](./tech-stack/libraries-python.md)、[`tech-stack/libraries-go.md`](./tech-stack/libraries-go.md)（编辑对应语言源码时自动生效，聊选型时智能携带）。
 
 ### 2. 使用现代语言版本与语法
 
