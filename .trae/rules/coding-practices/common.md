@@ -1,5 +1,5 @@
 ---
-globs: *.ts,*.tsx,*.js,*.jsx,*.py,*.go,*.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm
+globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts,*.py,*.pyi,*.go,*.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm
 alwaysApply: false
 ---
 
