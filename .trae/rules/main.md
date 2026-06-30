@@ -25,84 +25,21 @@ alwaysApply: true
 
 ### 2. 使用现代语言版本与语法
 
-**核心原则**：用当前主流支持的较新版本，优先用最新语法简化代码、提升可读性与类型安全，避免过时或被取代的写法。
+**核心原则**：用当前主流支持的较新版本，优先用最新语法简化代码、提升可读性与类型安全，避免过时或被取代的写法；新语法服务于可读性、不为用而用，不用已 EOL 版本与实验性/非 Stage 4 语法。版本号须在配置中显式锁定以保团队一致。
 
-**通用要求**：
+**版本基线**（「最低」为下限、「推荐」为新项目默认；截至 2026-06，落地按官方最新稳定版校准）：
 
-- 下表「最低版本」为下限基线、「推荐版本」为新项目默认目标；不用已 EOL 的版本，升级时同步迁移废弃特性。
-- **新语法服务于可读性，不为用而用**：新写法反而更难懂时（如深度嵌套 `:=`、把简单分支硬写成 `match`、过度类型体操）选直观写法；实验性/非 Stage 4 语法不用于生产。
-- 版本号随时间演进，下列为截至 2026-06 的具体版本，落地时按官方最新稳定版校准。
-
-#### JavaScript / TypeScript
-
-| 项 | 最低版本 | 推荐版本 |
+| 语言 / 项 | 最低版本 | 推荐版本 |
 | --- | --- | --- |
-| Node.js | 22 LTS（Node 20 已于 2026-04 EOL） | 24 LTS（新项目）/ 最新 Current 26.x |
-| TypeScript | 5.9 | 6.0.x（新默认 `strict: true`、`target: es2025`、`module: esnext`） |
-| ECMAScript 目标 | ES2022 | ES2025 |
+| Node.js | 22 LTS | 24 LTS / 最新 26.x |
+| TypeScript | 5.9 | 6.0.x（`strict: true`、`target: es2025`、`module: esnext`） |
+| Python | 3.12 | 3.14.x |
+| Go | 1.25（官方支持最新两个大版本） | 1.26.x |
+| C++ 标准 | C++20 | C++23 |
+| C++ 编译器 | GCC 12 / Clang 15 / MSVC 19.3x | 最新稳定版（GCC 14+ / Clang 18+） |
+| Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
 
-- **一律使用 TypeScript**，不写裸 JavaScript；新文件使用 `.ts` / `.tsx`。
-- `tsconfig.json` 中必须启用 `strict: true`（建议再开 `noUncheckedIndexedAccess`）；模块系统统一用 **ESM**（`import`/`export`），不用 CommonJS。
-- **版本声明（必须显式锁定）**：`package.json` 设置 `"engines": { "node": ">=22" }` 与 `"type": "module"`；用 `.nvmrc` / Volta 固定本地 Node 版本，确保团队一致。
-- 优先采用现代语法简化代码，例如：
-  - 可选链 `?.` 与空值合并 `??`，替代层层 `&&` 判空。
-  - 解构、展开运算符 `...`、模板字符串，替代手动拼接。
-  - `async`/`await` 替代回调与裸 `Promise.then` 链。
-  - 顶层 `await`、`Array` 新方法（`at`、`findLast`、`toSorted` 等）、逻辑赋值运算符（`??=`、`||=`）。
-- **禁止**：`var`（用 `const`/`let`）、`==`/`!=`（用 `===`/`!==`）、`any`（用 `unknown` 或具体类型）、`namespace`（用 ESM 模块）、CommonJS `require`/`module.exports`、`enum`（优先 `as const` 联合类型）。
-
-#### Python
-
-| 项 | 最低版本 | 推荐版本 |
-| --- | --- | --- |
-| Python | 3.12（3.9–3.11 均已停止常规支持/接近 EOL） | 3.14.x（最新稳定版，新项目默认） |
-
-- 不使用已 EOL 的旧版本；新项目默认采用最新稳定的 3.14.x。
-- **全量使用类型注解**，配合 `mypy` / `pyright` 做静态检查。
-- **版本声明（必须显式锁定）**：`pyproject.toml` 设置 `requires-python = ">=3.12"`；用 `uv` 管理并锁定（`.python-version` + `uv.lock`），确保团队一致。
-- 优先采用现代语法简化代码，例如：
-  - 结构化模式匹配 `match`/`case`，替代冗长的 `if/elif` 链。
-  - 内置泛型与新式类型语法（`list[int]`、`X | None`、`type` 别名语句），替代 `typing.List`、`Optional`。
-  - f-string（含 `f"{x=}"` 调试写法），替代 `%` 与 `.format()`。
-  - `dataclasses` / `pydantic` 模型，替代手写 `__init__` 样板。
-  - 海象运算符 `:=`、`pathlib`、上下文管理器 `with`、推导式等惯用法。
-- **禁止**：`from x import *`、可变默认参数（`def f(a=[])`，改用 `None` 哨兵）、裸 `except:`（捕获具体异常）、`typing.List`/`Dict`/`Optional` 等旧式泛型（用内置 `list`/`dict`/`X | None`）、用 `os.path` 拼路径（用 `pathlib`）。
-
-#### Go
-
-| 项 | 最低版本 | 推荐版本 |
-| --- | --- | --- |
-| Go | 1.25（Go 支持策略为最新两个大版本，更早版本已不再维护） | 1.26.x（最新稳定版，2026-02 发布，新项目默认） |
-
-- 遵循 Go 官方「最新两个大版本」支持策略，不使用已失去支持的旧版本；新项目默认采用最新稳定的 1.26.x。
-- **必用 Go Modules**：`go.mod` 中用 `go 1.25`（或更高）声明语言版本基线；用 `toolchain` 指令固定团队工具链版本，确保一致。
-- 优先采用现代语法简化代码，例如：
-  - 泛型（类型参数）写通用容器与算法，替代 `interface{}` + 类型断言的样板。
-  - 标准库 `slices`、`maps`、`cmp` 操作切片与映射，替代手写循环与 `golang.org/x/exp/*`。
-  - 结构化日志 `log/slog`，替代 `log` 裸打印与第三方日志门面。
-  - `errors.Is`/`errors.As` + `fmt.Errorf("...: %w", err)` 包装与判别错误，替代字符串比较与 `github.com/pkg/errors`。
-  - `context.Context` 贯穿请求生命周期，传递取消、超时与请求级值。
-  - `for range n`（整数范围循环，1.22+）、`range over func`（迭代器，1.23+）等惯用法。
-- **禁止**：忽略 `error` 返回值（必须显式处理或 `_` 并写明原因）、用 `panic` 处理可预期错误（仅用于不可恢复的程序错误）、滥用空 `interface{}`/`any`（优先具体类型或泛型）、用 `ioutil.*`（已废弃，用 `os`/`io`）、裸 `goroutine` 不管理生命周期（见「异步与并发」）。
-
-#### C++
-
-| 项 | 最低版本 | 推荐版本 |
-| --- | --- | --- |
-| C++ 标准 | C++20（`-std=c++20`） | C++23（`-std=c++23`，新项目默认） |
-| 编译器 | GCC 12 / Clang 15 / MSVC 19.3x（VS 2022） | 最新稳定版（GCC 14+ / Clang 18+ / 最新 MSVC） |
-| 构建系统 | Bazel 7.x（启用 bzlmod） | 最新 Bazel（`.bazelversion` 固定，bzlmod + Bazel Central Registry 管理依赖） |
-
-- **现代 C++ 优先**：编写 RAII 风格代码，资源生命周期绑定对象；用值语义与移动语义，避免手动 `new`/`delete`。
-- **标准声明（必须显式锁定）**：在 `.bazelrc` 固定 `build --cxxopt=-std=c++23`（或 per-target `copts`），并用 `.bazelversion` 锁定 Bazel 版本；通过 `MODULE.bazel` + `MODULE.bazel.lock` 锁定外部依赖，确保团队一致。
-- 优先采用现代语法简化代码，例如：
-  - 智能指针 `std::unique_ptr`/`std::shared_ptr` + `std::make_unique`/`std::make_shared`，替代裸 `new`/`delete`（见「编码实践 · 类型安全与错误处理」的资源管理）。
-  - `auto`、结构化绑定 `auto [a, b] = ...`、范围 `for`、`if`/`switch` 初始化语句，简化样板。
-  - `std::optional`/`std::variant`/`std::expected`（C++23）表达「可能缺失/多态/可失败」，替代裸指针哨兵与错误码。
-  - `std::string_view`/`std::span` 传递只读视图，避免不必要拷贝；`constexpr`/`consteval` 把计算前移到编译期。
-  - Concepts 约束模板（替代 SFINAE）、Ranges（`std::ranges::`、视图与管道 `|`）替代手写循环与迭代器对。
-  - `<format>` 风格的格式化：默认用 [`fmt`](https://github.com/fmtlib/fmt)（`fmt::format`/`fmt::print`），替代 `printf` 与 iostream 拼接；`<chrono>` 处理时间。
-- **禁止**：裸 `new`/`delete` 与裸 `owning` 指针管理资源（用智能指针/容器/RAII）、C 风格强制转换（用 `static_cast`/`reinterpret_cast` 等具名转换）、`using namespace std;` 写在头文件或全局作用域、宏充当常量/函数（用 `constexpr`/`inline` 函数/`enum class`）、裸数组与 `strcpy`/`sprintf` 等不安全 C API（用 `std::array`/`std::vector`/`fmt::format`）、未初始化变量、在头文件定义非 `inline` 的非模板函数/全局变量。
+各语言的版本锁定方式、推荐语法与禁止写法见 [`coding-practices.md`](./coding-practices.md) 「§0 语言版本与语法」（编辑对应源文件时自动生效）。
 
 ### 3. 统一工具链
 
