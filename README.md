@@ -13,11 +13,11 @@
 | [`main.md`](./.trae/rules/main.md) | 始终生效（`alwaysApply: true`） | **主索引**：五大领域导览 + 高频遵守的核心原则与关键禁令 |
 | [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 AI 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
 | [`languages/common.md`](./.trae/rules/languages/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
-| [`languages/{js,python,go,cpp}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 库选型**：版本锁定与语法（§0）、各主题该语言的具体做法、分场景库选型表与选型判据 |
+| [`languages/{js,python,go,cpp}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 库选型 + 工具链**：版本锁定与语法（§0）、各主题该语言的具体做法、分场景库选型表与选型判据、工具链与 pre-commit（§10） |
 | [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
 | [`versioning.md`](./.trae/rules/versioning.md) | 智能生效（`description`） | 提交规范、SemVer、changelog、依赖治理、CI/CD |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的规范 |
-| [`tech-stack/toolchain.md`](./.trae/rules/tech-stack/toolchain.md) | 智能生效（`description`） | 统一工具链（包管理、Lint、类型检查、测试、构建、pre-commit） |
+| [`toolchain.md`](./.trae/rules/toolchain.md) | 智能生效（`description`） | 统一工具链的**跨语言通用约定**（配置/锁文件入库、pre-commit 与 CI 一致性）；各语言具体工具见 `languages/{语言}.md` §10 |
 
 > Trae 会递归读取 `.trae/rules/` 及其子目录（最多 3 层）。拷贝到其他项目时把整个 `.trae/rules/` 目录一并带上，文件间的相对链接才不会失效。
 
@@ -27,7 +27,7 @@
 
 | 领域 | 定位（管什么） | 主要内容 | 主要承载文件 |
 | --- | --- | --- | --- |
-| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `tech-stack/toolchain.md`（库选型与语法明细在 `languages/{语言}.md`） |
+| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `toolchain.md`（跨语言约定）；库选型、语法、工具链明细在 `languages/{语言}.md` |
 | 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `languages/`（`common.md` 通用 + 分语言文件） |
 | 三、项目与工程化 | 项目怎么搭 | 项目结构、配置与环境管理、日志与可观测性 | `main.md` + `project.md` |
 | 四、版本与协作 | 怎么协作发布 | 提交规范、SemVer、changelog、依赖治理、CI/CD | `main.md` + `versioning.md` + `git-commit-message.md` |
@@ -50,7 +50,7 @@
 
 将这份规范应用到其他 Trae 项目：
 
-- **拷贝**：把整个 `.trae/rules/` 目录复制到目标项目根目录（含 `tech-stack/` 子目录）。Trae 会自动识别并按各文件的生效方式加载，无需额外配置。
+- **拷贝**：把整个 `.trae/rules/` 目录复制到目标项目根目录（含 `languages/` 子目录）。Trae 会自动识别并按各文件的生效方式加载，无需额外配置。
 - **校验生效方式**：在 Trae 的「设置 → 规则」面板可查看/调整各项目规则的应用模式（始终生效 / 指定文件 / 智能生效 / 手动 `#Rule`）。
 - **同步**：也可用 git submodule / 软链等方式引入 `.trae/rules/`，便于统一更新。
 - **全局复用**：希望某些准则（如「与 AI 协作」）在所有项目生效，可在 Trae「设置 → 规则 → 全局规则」中粘贴对应内容。

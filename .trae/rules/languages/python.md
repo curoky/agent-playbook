@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Python 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 Python 的**编码实践**（[`common.md`](./common.md) 的 Python 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Python 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`uv` / `ruff` / CI / pre-commit）见 [`toolchain.md`](../tech-stack/toolchain.md)。
+> 本文件汇总 Python 的**编码实践**（[`common.md`](./common.md) 的 Python 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Python 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`uv` / `ruff` / CI / pre-commit）见 [`toolchain.md`](../toolchain.md)。
 
 ## 0. 语言版本与语法
 
@@ -126,3 +126,16 @@ alwaysApply: false
 - **HTTP `httpx` vs `requests`**：新项目一律 `httpx`（同步异步统一、API 与 requests 近似）；维护老代码可沿用 `requests`，不新引入 `aiohttp`（除非需要其特定服务端能力）。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+
+## 10. 工具链
+
+> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 包 / 环境 / 版本管理 | [`uv`](https://github.com/astral-sh/uv) | 管理依赖、虚拟环境与 Python 版本；提交 `uv.lock`。 |
+| Lint + 格式化 | [`ruff`](https://github.com/astral-sh/ruff) | `ruff check` + `ruff format`，替代 `flake8` + `black` + `isort`。 |
+| 类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 开启 strict。 |
+| 测试 | [`pytest`](https://github.com/pytest-dev/pytest) | 配合 `pytest-cov` 覆盖率。 |
+
+- **提交前检查（pre-commit）**：用 [`pre-commit`](https://github.com/pre-commit/pre-commit) 框架挂载 `ruff`、`mypy` 等钩子。

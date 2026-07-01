@@ -43,7 +43,7 @@ alwaysApply: true
 
 ### 3. 统一工具链
 
-工具链明细（JS/TS、Python、Go 与 C++ 的包管理、Lint、类型检查、测试、构建、pre-commit）见 [`tech-stack/toolchain.md`](./tech-stack/toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`。
+工具链明细见各语言文件 [`languages/{js,python,go,cpp}.md`](./languages/) 的「§10 工具链」（包管理、Lint、类型检查、测试、构建、pre-commit），跨语言通用约定见 [`toolchain.md`](./toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件与锁文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`。
 
 ## 二、编码实践
 

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # JavaScript / TypeScript 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 JS/TS 的**编码实践**（[`common.md`](./common.md) 的 JS/TS 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 JS/TS 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（包管理 / CI / pre-commit）见 [`toolchain.md`](../tech-stack/toolchain.md)。
+> 本文件汇总 JS/TS 的**编码实践**（[`common.md`](./common.md) 的 JS/TS 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 JS/TS 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（包管理 / CI / pre-commit）见 [`toolchain.md`](../toolchain.md)。
 
 ## 0. 语言版本与语法
 
@@ -124,3 +124,18 @@ alwaysApply: false
 - **ID `nanoid` vs `crypto.randomUUID()`**：需要标准 UUID（数据库主键、跨系统）直接用内置 `crypto.randomUUID()`，不引库；需要**更短、URL 友好、可定制字母表**的 ID 才用 `nanoid`。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+
+## 10. 工具链
+
+> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 包管理 | [`pnpm`](https://github.com/pnpm/pnpm) | 原生支持 workspace；提交 `pnpm-lock.yaml`。 |
+| Lint + 格式化 | [`biome`](https://github.com/biomejs/biome) | 一体化；需丰富插件时退回 `eslint` + `prettier`。 |
+| 类型检查 | `tsc --noEmit` | `strict: true`。 |
+| 测试 | [`vitest`](https://github.com/vitest-dev/vitest) | 统一单测与覆盖率。 |
+| 构建 / 打包 | [`tsup`](https://github.com/egoist/tsup) / [`tsdown`](https://github.com/rolldown/tsdown) | 库用零配置打包；应用按框架自带构建（Vite 等）。 |
+| 直接运行 TS | [`tsx`](https://github.com/privatenumber/tsx) | 免编译执行 `.ts`。 |
+
+- **提交前检查（pre-commit）**：用 [`husky`](https://github.com/typicode/husky) + [`lint-staged`](https://github.com/lint-staged/lint-staged) 在提交前对暂存文件跑 `biome` 与 `tsc`。

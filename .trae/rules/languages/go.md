@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Go 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 Go 的**编码实践**（[`common.md`](./common.md) 的 Go 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Go 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`go mod` / `golangci-lint` / CI）见 [`toolchain.md`](../tech-stack/toolchain.md)。
+> 本文件汇总 Go 的**编码实践**（[`common.md`](./common.md) 的 Go 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Go 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`go mod` / `golangci-lint` / CI）见 [`toolchain.md`](../toolchain.md)。
 
 ## 0. 语言版本与语法
 
@@ -97,7 +97,7 @@ alwaysApply: false
 | HTTP 客户端重试 | 标准库 `net/http` + [`hashicorp/go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 按需 | 标准库客户端够用，需退避重试时引入。 |
 | 唯一 ID | [`google/uuid`](https://github.com/google/uuid) | 按需 | 生成 UUID。 |
 | 依赖注入 | [`google/wire`](https://github.com/google/wire) | 按需 | 编译期 DI；小项目手动注入即可，避免过度设计。 |
-| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须 | 聚合多 linter，见 [`toolchain.md`](../tech-stack/toolchain.md)。 |
+| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须 | 聚合多 linter，见 [`toolchain.md`](../toolchain.md)。 |
 | 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | 必须 | 官方漏洞扫描，CI 强制。 |
 | PostgreSQL 驱动 | [`jackc/pgx`](https://github.com/jackc/pgx) | 必须 | Postgres 首选驱动，性能与功能优于 `lib/pq`；可配 `sqlc`/`sqlx`。 |
 | Redis 客户端 | [`redis/go-redis`](https://github.com/redis/go-redis) | 按需 | 主流 Redis 客户端。 |
@@ -120,3 +120,19 @@ alwaysApply: false
 - **DI `google/wire` vs 手动注入**：小到中型项目**手动构造依赖**即可，最清晰；仅当依赖图庞大、手写 wiring 成为负担时引入编译期 `wire`，不用运行时反射型 DI 容器。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+
+## 10. 工具链
+
+> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 依赖 / 版本管理 | 标准 `go mod` + `toolchain` 指令 | 提交 `go.mod` 与 `go.sum`；`go mod tidy` 保持依赖整洁。 |
+| 格式化 | `gofmt` / [`goimports`](https://pkg.go.dev/golang.org/x/tools/cmd/goimports) | `goimports` 兼做 import 分组排序；格式不入 review 讨论。 |
+| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | v2.x；`.golangci.yml` 入库，聚合 `govet`、`staticcheck`、`errcheck` 等。 |
+| 静态检查 | `go vet` / [`staticcheck`](https://github.com/dominikh/go-tools) | `go vet` 基础检查；`staticcheck` 已含于 `golangci-lint`。 |
+| 测试 + 覆盖率 | 标准 `go test` | `go test -race -cover ./...`，开启竞态检测。 |
+| 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | `govulncheck ./...`，CI 强制。 |
+| 构建 | 标准 `go build` | 交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
+
+- **提交前检查（pre-commit）**：用 `pre-commit` 框架或 Makefile 在提交前跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # C++ 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 C++ 的**编码实践**（[`common.md`](./common.md) 的 C++ 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 C++ 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（Bazel / clang-tidy / sanitizers / CI）见 [`toolchain.md`](../tech-stack/toolchain.md)。基线为 C++23/20。
+> 本文件汇总 C++ 的**编码实践**（[`common.md`](./common.md) 的 C++ 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 C++ 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（Bazel / clang-tidy / sanitizers / CI）见 [`toolchain.md`](../toolchain.md)。基线为 C++23/20。
 
 ## 0. 语言版本与语法
 
@@ -118,3 +118,20 @@ alwaysApply: false
 - **是否引入 `folly`/`wangle` 与 `Boost`/`abseil`**：仅当标准库确有缺口时引入，且**只依赖用到的子库**，不整包拉入；与标准库重叠的功能（智能指针、`optional`、`filesystem`）一律用标准库。`folly`/`wangle` 体量大、编译重、依赖链长，仅在**高并发服务端确需其性能/能力**时引入，普通项目优先 `abseil` 或标准库。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+
+## 10. 工具链
+
+> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+
+| 用途 | 工具 | 说明 |
+| --- | --- | --- |
+| 构建系统 | [`Bazel`](https://bazel.build/)（启用 bzlmod） | 用 `BUILD.bazel` 声明 target，`.bazelversion` 固定版本；`.bazelrc` 固定 `build --cxxopt=-std=c++23`。 |
+| 依赖管理 | Bazel bzlmod + [Bazel Central Registry](https://registry.bazel.build/) | `MODULE.bazel` 声明 `bazel_dep`，`MODULE.bazel.lock` 锁版本并入库；BCR 未收录的库用 `git_override`/`http_archive`。 |
+| 格式化 | [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) | `.clang-format` 入库；格式不入 review 讨论。 |
+| 静态分析 / Lint | [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) | `.clang-tidy` 入库，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines` 等；CI 强制。 |
+| 编译期检查 | 编译器 warning | 在 `.bazelrc` 配 `build --cxxopt=-Wall --cxxopt=-Wextra --cxxopt=-Wpedantic` 并视情况 `-Werror`（MSVC 用 `/W4 /WX`）。 |
+| 运行期检查 | Sanitizers | 用 `--config=asan`/`--config=ubsan`（`.bazelrc` 预置）跑 ASan/UBSan、必要时 TSan；定位内存与未定义行为。 |
+| 测试 + 覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2) | 通过 `bazel test //...` 统一运行；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
+| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 微基准，配合性能优化。 |
+
+- **提交前检查（pre-commit）**：用 `pre-commit` 框架或 Git 钩子在提交前跑 `clang-format --dry-run -Werror`（或对暂存文件格式校验）与 `clang-tidy`；`bazel build`/`bazel test //...` 在 CI 执行。
