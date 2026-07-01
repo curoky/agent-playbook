@@ -12,15 +12,11 @@
 | --- | --- | --- |
 | [`main.md`](./.trae/rules/main.md) | 始终生效（`alwaysApply: true`） | **主索引**：五大领域导览 + 高频遵守的核心原则与关键禁令 |
 | [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 AI 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
-| [`coding-practices/common.md`](./.trae/rules/coding-practices/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
-| [`coding-practices/{js,python,go,cpp}.md`](./.trae/rules/coding-practices/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**特有写法**：版本锁定与语法（§0）+ 各主题该语言的具体做法 |
+| [`languages/common.md`](./.trae/rules/languages/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
+| [`languages/{js,python,go,cpp}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 库选型**：版本锁定与语法（§0）、各主题该语言的具体做法、分场景库选型表与选型判据 |
 | [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
 | [`versioning.md`](./.trae/rules/versioning.md) | 智能生效（`description`） | 提交规范、SemVer、changelog、依赖治理、CI/CD |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的规范 |
-| [`tech-stack/libraries-js.md`](./.trae/rules/tech-stack/libraries-js.md) | 指定文件生效（`globs`：JS/TS）+ 智能生效（`description`） | JS/TS 分场景库选型表与选型判据 |
-| [`tech-stack/libraries-python.md`](./.trae/rules/tech-stack/libraries-python.md) | 指定文件生效（`globs`：PY）+ 智能生效（`description`） | Python 分场景库选型表与选型判据 |
-| [`tech-stack/libraries-go.md`](./.trae/rules/tech-stack/libraries-go.md) | 指定文件生效（`globs`：GO）+ 智能生效（`description`） | Go 分场景库选型表与选型判据 |
-| [`tech-stack/libraries-cpp.md`](./.trae/rules/tech-stack/libraries-cpp.md) | 指定文件生效（`globs`：C++）+ 智能生效（`description`） | C++ 分场景库选型表与选型判据 |
 | [`tech-stack/toolchain.md`](./.trae/rules/tech-stack/toolchain.md) | 智能生效（`description`） | 统一工具链（包管理、Lint、类型检查、测试、构建、pre-commit） |
 
 > Trae 会递归读取 `.trae/rules/` 及其子目录（最多 3 层）。拷贝到其他项目时把整个 `.trae/rules/` 目录一并带上，文件间的相对链接才不会失效。
@@ -31,8 +27,8 @@
 
 | 领域 | 定位（管什么） | 主要内容 | 主要承载文件 |
 | --- | --- | --- | --- |
-| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `tech-stack/`（语法明细在 `coding-practices/{语言}.md` §0） |
-| 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `coding-practices/`（`common.md` 通用 + 分语言文件） |
+| 一、技术栈与工具基线 | 用什么 | 优先复用开源组件、现代语言版本与语法、统一工具链 | `main.md` + `tech-stack/toolchain.md`（库选型与语法明细在 `languages/{语言}.md`） |
+| 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `languages/`（`common.md` 通用 + 分语言文件） |
 | 三、项目与工程化 | 项目怎么搭 | 项目结构、配置与环境管理、日志与可观测性 | `main.md` + `project.md` |
 | 四、版本与协作 | 怎么协作发布 | 提交规范、SemVer、changelog、依赖治理、CI/CD | `main.md` + `versioning.md` + `git-commit-message.md` |
 | 五、与 AI 协作 | AI 如何工作 | 思考在先、简单优先、外科式改动、目标驱动、善用 Trae 上下文与工具、沟通交付、设计文档与规则同步（行为准则，优先级最高） | `ai-collaboration.md` |
