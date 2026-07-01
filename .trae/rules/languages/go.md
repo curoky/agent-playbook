@@ -103,6 +103,7 @@ alwaysApply: false
 | Redis 客户端 | [`redis/go-redis`](https://github.com/redis/go-redis) | 按需 | 主流 Redis 客户端。 |
 | 消息队列 / Kafka | [`twmb/franz-go`](https://github.com/twmb/franz-go) | 按需 | 纯 Go Kafka 客户端；需广泛生态可选 `segmentio/kafka-go`。 |
 | 限流 | 标准库 [`golang.org/x/time/rate`](https://pkg.go.dev/golang.org/x/time/rate) | 标准库 | 令牌桶限流器。 |
+| 终端进度条 | [`schollz/progressbar`](https://github.com/schollz/progressbar) / [`vbauerster/mpb`](https://github.com/vbauerster/mpb) | 按需 | 单条进度条用 `progressbar`（API 极简）；多条并发/装饰器需求用 `mpb`。 |
 | HTTP 中间件 / 框架 | [`chi`](https://github.com/go-chi/chi) | 按需 | 贴近标准库 `net/http` 的轻量路由；重生态用 `echo`/`gin`。 |
 | gRPC | [`google.golang.org/grpc`](https://github.com/grpc/grpc-go) | 必须 | 官方 gRPC 实现，配 `protoc-gen-go`。 |
 | 配置热加载 / CLI 旗标 | 标准库 `flag` | 标准库 | 单层简单参数够用；复杂才上 `cobra`+`viper`。 |
@@ -118,6 +119,7 @@ alwaysApply: false
 - **并发 `errgroup` vs 手写 `sync.WaitGroup`**：一组并发子任务需要**首个错误就取消其余 + 统一等待**用 `errgroup`；纯 fire-and-forget、无需聚合错误的简单等待用标准库 `sync.WaitGroup`。
 - **Postgres 驱动 `pgx` vs `lib/pq`**：新项目一律 `pgx`（活跃维护、性能好、支持 Postgres 特性）；`lib/pq` 已进入维护停滞，不新选用。
 - **DI `google/wire` vs 手动注入**：小到中型项目**手动构造依赖**即可，最清晰；仅当依赖图庞大、手写 wiring 成为负担时引入编译期 `wire`，不用运行时反射型 DI 容器。
+- **进度条 `schollz/progressbar` vs `vbauerster/mpb`**：只需**单条**进度条、追求 API 极简（`NewOptions` + `Add`）用 `progressbar`；需要**多条并发进度条、动态增删、丰富装饰器（ETA/字节计数/宽度对齐）**用 `mpb`（配合 goroutine + `WaitGroup`），代价是 API 更重、学习曲线更陡。一次性脚本用 `fmt.Printf` 即可，别引依赖。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
 
