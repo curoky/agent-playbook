@@ -15,7 +15,7 @@ alwaysApply: false
 - 常用 `type`：`feat`（新功能，minor）、`fix`（修复，patch）、`docs`/`style`/`refactor`/`perf`/`test`/`build`/`ci`/`chore`。
 - **破坏性变更**：`type` 后加 `!`（如 `feat!:`）或 footer 写 `BREAKING CHANGE:`，触发 major。
 - subject 用祈使句、简洁；一次提交聚焦单一逻辑变更。
-- 用 [`commitlint`](https://github.com/conventional-changelog/commitlint) 强制校验（配 husky `commit-msg`）；交互式提交可用 [`commitizen`](https://github.com/commitizen/cz-cli)。
+- 用 [`commitlint`](https://github.com/conventional-changelog/commitlint) 强制校验（在 `lefthook.yml` 的 `commit-msg` 钩子中挂载）；交互式提交可用 [`commitizen`](https://github.com/commitizen/cz-cli)。
 
 ## 2. 语义化版本（SemVer）
 

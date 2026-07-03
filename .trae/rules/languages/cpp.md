@@ -134,4 +134,4 @@ alwaysApply: false
 | 测试 + 覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2) | 通过 `bazel test //...` 统一运行；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
 | 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 微基准，配合性能优化。 |
 
-- **提交前检查（pre-commit）**：用 `pre-commit` 框架或 Git 钩子在提交前跑 `clang-format --dry-run -Werror`（或对暂存文件格式校验）与 `clang-tidy`；`bazel build`/`bazel test //...` 在 CI 执行。
+- **提交前检查（pre-commit）**：用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理 git hook，在 `lefthook.yml` 的 `pre-commit` 中对暂存文件跑 `clang-format --dry-run -Werror`（或格式校验）与 `clang-tidy`；`bazel build`/`bazel test //...` 在 CI 执行。

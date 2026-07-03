@@ -138,4 +138,4 @@ alwaysApply: false
 | 构建 / 打包 | [`tsup`](https://github.com/egoist/tsup) / [`tsdown`](https://github.com/rolldown/tsdown) | 库用零配置打包；应用按框架自带构建（Vite 等）。 |
 | 直接运行 TS | [`tsx`](https://github.com/privatenumber/tsx) | 免编译执行 `.ts`。 |
 
-- **提交前检查（pre-commit）**：用 [`husky`](https://github.com/typicode/husky) + [`lint-staged`](https://github.com/lint-staged/lint-staged) 在提交前对暂存文件跑 `biome` 与 `tsc`。
+- **提交前检查（pre-commit）**：用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理 git hook，在 `lefthook.yml` 的 `pre-commit` 中对暂存文件（`{staged_files}` + `glob: "*.{ts,tsx,js,jsx}"`）跑 `biome` 与 `tsc`。

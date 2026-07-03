@@ -137,4 +137,4 @@ alwaysApply: false
 | 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | `govulncheck ./...`，CI 强制。 |
 | 构建 | 标准 `go build` | 交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
 
-- **提交前检查（pre-commit）**：用 `pre-commit` 框架或 Makefile 在提交前跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。
+- **提交前检查（pre-commit）**：用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理 git hook，在 `lefthook.yml` 的 `pre-commit` 中跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。

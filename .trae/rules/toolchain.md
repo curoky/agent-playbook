@@ -14,12 +14,12 @@ alwaysApply: false
 
 ## 通用要求
 
-- **配置文件必须入库**：`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`、`go.mod`、`.golangci.yml`、`MODULE.bazel`、`BUILD.bazel`、`.bazelrc`、`.bazelversion`、`.clang-format`、`.clang-tidy` 等。
+- **配置文件必须入库**：`package.json`、`pyproject.toml`、`tsconfig.json`、`biome.json`、`go.mod`、`.golangci.yml`、`MODULE.bazel`、`BUILD.bazel`、`.bazelrc`、`.bazelversion`、`.clang-format`、`.clang-tidy`、`lefthook.yml` 等。
 - **锁文件/校验入库**：`pnpm-lock.yaml`、`uv.lock`、`go.sum`、`MODULE.bazel.lock` 等一并提交，保证依赖可复现。
 - **关键检查可一键运行**，并在 CI 与 pre-commit 强制执行。
 - **格式不进 review**：缩进、引号、分号、import 排序全部交给格式化工具处理，review 中不讨论格式。
 
 ## 提交前检查（pre-commit）与 CI 一致性
 
-- 各语言的 pre-commit 钩子与命令见对应 `languages/{语言}.md` 的「§10 工具链」（JS/TS 用 `husky` + `lint-staged`，Python/Go/C++ 用 `pre-commit` 框架或 Git 钩子/Makefile）。
+- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**（语言无关、配置单一 `lefthook.yml` 入库、支持并行执行与暂存文件过滤 `{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile。各语言在 pre-commit 挂载的具体命令见对应 `languages/{语言}.md` 的「§10 工具链」。
 - **CI 中重复执行同一套检查**（格式化校验、Lint/静态分析、类型检查/vet、测试），确保与本地、pre-commit 完全一致，避免「本地过、CI 挂」。

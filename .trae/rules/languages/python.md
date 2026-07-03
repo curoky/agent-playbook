@@ -138,4 +138,4 @@ alwaysApply: false
 | 类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 开启 strict。 |
 | 测试 | [`pytest`](https://github.com/pytest-dev/pytest) | 配合 `pytest-cov` 覆盖率。 |
 
-- **提交前检查（pre-commit）**：用 [`pre-commit`](https://github.com/pre-commit/pre-commit) 框架挂载 `ruff`、`mypy` 等钩子。
+- **提交前检查（pre-commit）**：用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理 git hook，在 `lefthook.yml` 的 `pre-commit` 中对暂存文件跑 `ruff check`、`ruff format` 与 `mypy` 等。
