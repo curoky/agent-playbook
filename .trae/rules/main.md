@@ -38,16 +38,17 @@ alwaysApply: true
 | C++ 标准 | C++20 | C++23 |
 | C++ 编译器 | GCC 12 / Clang 15 / MSVC 19.3x | 最新稳定版（GCC 14+ / Clang 18+） |
 | Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
+| Bash | 4.4 | 5.x（`#!/usr/bin/env bash` + `set -euo pipefail`） |
 
-各语言的版本锁定方式、推荐语法与禁止写法见 `languages/` 下的分语言文件 [`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md) 的「§0 语言版本与语法」（编辑对应源文件时自动生效）。
+各语言的版本锁定方式、推荐语法与禁止写法见 `languages/` 下的分语言文件 [`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md)、[`bash.md`](./languages/bash.md) 的「§0 语言版本与语法」（编辑对应源文件时自动生效）。
 
 ### 3. 统一工具链
 
-工具链明细见各语言文件 [`languages/{js,python,go,cpp}.md`](./languages/) 的「§10 工具链」（包管理、Lint、类型检查、测试、构建、pre-commit），跨语言通用约定见 [`toolchain.md`](./toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件与锁文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`。
+工具链明细见各语言文件 [`languages/{js,python,go,cpp}.md`](./languages/) 的「§10 工具链」（包管理、Lint、类型检查、测试、构建、pre-commit），跨语言通用约定见 [`toolchain.md`](./toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件与锁文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`，Bash 用 `shfmt`+`shellcheck`+`bats`。
 
 ## 二、编码实践
 
-> 本域各主题的核心原则与语言无关要点见 [`languages/common.md`](./languages/common.md)，各语言特有写法（含库选型）见同目录 [`js.md`](./languages/js.md)/[`python.md`](./languages/python.md)/[`go.md`](./languages/go.md)/[`cpp.md`](./languages/cpp.md)（编辑对应源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
+> 本域各主题的核心原则与语言无关要点见 [`languages/common.md`](./languages/common.md)，各语言特有写法（含库选型）见同目录 [`js.md`](./languages/js.md)/[`python.md`](./languages/python.md)/[`go.md`](./languages/go.md)/[`cpp.md`](./languages/cpp.md)/[`bash.md`](./languages/bash.md)（编辑对应源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
 
 - **1. 命名与代码风格**：命名即文档，用完整可检索的名字（布尔加 `is`/`has` 前缀）；遵循语言惯例大小写（Go 用 `MixedCaps`、靠首字母大小写控制导出）；避免魔法值；格式全交给 `biome` / `ruff format` / `gofmt`，不手写、不在 review 讨论。
 - **2. 函数与模块设计**：单一职责、小而专一；参数超 3 个改具名对象、避免布尔陷阱参数；核心逻辑写纯函数、副作用推到边界；显式导出最小公共 API（TS 具名导出、Python `__all__`、Go 靠首字母大写控制导出且接口宜小）；依赖抽象而非实现，避免循环依赖。

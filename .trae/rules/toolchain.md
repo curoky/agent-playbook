@@ -5,7 +5,7 @@ alwaysApply: false
 
 # 统一工具链（跨语言）
 
-> 本文件是主规范「技术栈与工具基线 · 统一工具链」的**跨语言通用约定**，在搭项目脚手架、配工具时查阅。**各语言的具体工具表与 pre-commit 命令**见 `languages/` 下分语言文件的「§10 工具链」：[`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md)（编辑对应源文件时自动生效）。
+> 本文件是主规范「技术栈与工具基线 · 统一工具链」的**跨语言通用约定**，在搭项目脚手架、配工具时查阅。**各语言的具体工具表与 pre-commit 命令**见 `languages/` 下分语言文件的「§10 工具链」：[`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md)、[`bash.md`](./languages/bash.md)（编辑对应源文件时自动生效）。
 
 ## 核心原则
 

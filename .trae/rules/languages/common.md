@@ -1,11 +1,11 @@
 ---
-globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts,*.py,*.pyi,*.go,*.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm
+globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts,*.py,*.pyi,*.go,*.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm,*.sh,*.bash
 alwaysApply: false
 ---
 
 # 编码实践（通用）
 
-> 本文件只保留**跨语言、可判断**的决策要点（什么信号触发什么动作）。各语言的具体写法、推荐语法、禁止项与库选型见同目录分语言文件（编辑对应源文件时自动生效）：[`js.md`](./js.md)、[`python.md`](./python.md)、[`go.md`](./go.md)、[`cpp.md`](./cpp.md)；语言无关的目标性表述见 [`main.md`](../main.md)，此处不重复。
+> 本文件只保留**跨语言、可判断**的决策要点（什么信号触发什么动作）。各语言的具体写法、推荐语法、禁止项与库选型见同目录分语言文件（编辑对应源文件时自动生效）：[`js.md`](./js.md)、[`python.md`](./python.md)、[`go.md`](./go.md)、[`cpp.md`](./cpp.md)、[`bash.md`](./bash.md)；语言无关的目标性表述见 [`main.md`](../main.md)，此处不重复。
 >
 > 下列章节标题为统一骨架，与分语言文件一一对应；只在「有跨语言通用判据」时才填内容，无内容的节作占位、细节落在分语言文件。
 
