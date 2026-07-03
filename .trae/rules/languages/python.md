@@ -16,7 +16,7 @@ alwaysApply: false
   - 结构化模式匹配 `match`/`case`，替代冗长的 `if/elif` 链。
   - 内置泛型与新式类型语法（`list[int]`、`X | None`、`type` 别名语句），替代 `typing.List`、`Optional`。
   - f-string（含 `f"{x=}"` 调试写法），替代 `%` 与 `.format()`。
-  - `dataclasses` / `pydantic` 模型，替代手写 `__init__` 样板。
+  - 用 `pydantic` 模型替代手写 `__init__` 样板（默认首选）；仅当明确不需要校验/序列化、且要零依赖或极致轻量时才用标准库 `dataclasses`。
   - 海象运算符 `:=`、`pathlib`、上下文管理器 `with`、推导式等惯用法。
 - **禁止**：`from x import *`、可变默认参数（`def f(a=[])`，改用 `None` 哨兵）、`typing.List`/`Dict`/`Optional` 等旧式泛型（用内置 `list`/`dict`/`X | None`）、用 `os.path` 拼路径（用 `pathlib`）；裸 `except:` 见 §3。
 
@@ -28,7 +28,7 @@ alwaysApply: false
 
 ## 2. 函数与模块设计
 
-- **参数精简**：参数超过 3 个时改用关键字参数 + `dataclass`/`pydantic`。
+- **参数精简**：参数超过 3 个时改用关键字参数 + `pydantic` 模型（默认首选，无需校验的轻量场景可用 `dataclass`）。
 - **明确公共 API**：用 `__all__` 或下划线前缀标记私有。
 - **依赖倒置**：高层逻辑依赖 `Protocol`/ABC，由外部注入实现。
 
@@ -81,7 +81,7 @@ alwaysApply: false
 >
 > - **必须**：能大幅简化代码或 API 明显更好、更不易出错（如 `pydantic`、`typer`），作为默认选择。
 > - **按需**：与标准库差别不大、仅有性能或便利收益（如 `orjson`），仅在确有需求时引入。
-> - **标准库优先**：`pathlib`、`zoneinfo`、`dataclasses`、`subprocess`、`logging`、`secrets` 等够用时不引第三方。
+> - **标准库优先**：`pathlib`、`zoneinfo`、`subprocess`、`logging`、`secrets` 等够用时不引第三方（数据模型默认用 `pydantic`，仅无需校验的轻量场景才用标准库 `dataclasses`）。
 
 ### 速查表
 
