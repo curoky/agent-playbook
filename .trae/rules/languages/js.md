@@ -24,7 +24,7 @@ alwaysApply: false
 
 - **大小写惯例**：变量/函数 `camelCase`、类型/类 `PascalCase`、常量 `UPPER_SNAKE_CASE`、文件名 `kebab-case`。
 - **避免魔法值**：字面量提取为有名常量或 `as const` 联合类型。
-- **格式工具**：缩进、引号、分号、import 排序交给 `biome`（或 `eslint` + `prettier`）自动处理。
+- **格式工具**：缩进、引号、分号、import 排序统一交给 `biome`（配置 `biome.json`）自动处理，作为唯一 format 工具。
 
 ## 2. 函数与模块设计
 
@@ -132,7 +132,7 @@ alwaysApply: false
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |
 | 包管理 | [`pnpm`](https://github.com/pnpm/pnpm) | 原生支持 workspace；提交 `pnpm-lock.yaml`。 |
-| Lint + 格式化 | [`biome`](https://github.com/biomejs/biome) | 一体化；需丰富插件时退回 `eslint` + `prettier`。 |
+| Lint + 格式化 | [`biome`](https://github.com/biomejs/biome) | 一体化；format 统一用 `biome`（`biome.json`），需丰富插件规则时 Lint 可退回 `eslint`，但 format 仍用 `biome`。 |
 | 类型检查 | `tsc --noEmit` | `strict: true`。 |
 | 测试 | [`vitest`](https://github.com/vitest-dev/vitest) | 统一单测与覆盖率。 |
 | 构建 / 打包 | [`tsup`](https://github.com/egoist/tsup) / [`tsdown`](https://github.com/rolldown/tsdown) | 库用零配置打包；应用按框架自带构建（Vite 等）。 |
