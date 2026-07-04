@@ -6,7 +6,7 @@ alwaysApply: true
 
 本文件是 AI 助手在本项目中编写代码时应遵循的规范主索引，规范分为五个领域：**技术栈与工具基线**（用什么）、**编码实践**（怎么写）、**项目与工程化**（项目怎么搭）、**版本与协作**（怎么协作发布）、**与 AI 协作**（AI 如何工作）。其中「与 AI 协作」是行为准则、优先级最高，单独放在 [`ai-collaboration.md`](./ai-collaboration.md)（始终生效）。
 
-> 本文件与 [`ai-collaboration.md`](./ai-collaboration.md) 为「始终生效」规则；技术栈、工具链、编码实践、项目工程化、版本协作的明细按场景生效（见各文件 frontmatter），无需全程加载，Trae 会按对话内容与所涉文件自动携带。
+> 本文件与 [`ai-collaboration.md`](./ai-collaboration.md) 为「始终生效」规则；技术栈、工具链、编码实践、项目工程化、版本协作的明细按场景生效（见各文件 frontmatter），无需全程加载，Trae 会按对话内容与所涉文件自动携带。编写 Markdown 等文档时另见 [`documentation.md`](./documentation.md)（编辑文档文件时自动生效）。
 >
 > 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用各领域中与语言无关的通用原则，并套用对应生态的等价工具。
 
