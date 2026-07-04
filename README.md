@@ -1,17 +1,17 @@
-# 个人编码规范（Trae IDE 版）
+# agent-playbook
 
-本仓库用于**维护一份「我个人通用的编码规范」**，专为 [Trae IDE](https://www.trae.ai/) 的规则（Rule）机制组织。仓库没有应用源码，**唯一产物就是 [`.trae/rules/`](./.trae/rules/) 目录下的规则文件**——它们是给 AI 助手（及人）阅读的编码与协作规范，可被拷贝或链接到其他 Trae 项目中使用。
+`agent-playbook` 用于维护我个人可复用的 agent 工作手册，专为 [Trae IDE](https://www.trae.ai/) 的规则（Rule）与技能（Skill）等机制组织。仓库没有应用源码，当前主要产物是 [`.trae/rules/`](./.trae/rules/) 目录下的规则文件，后续也会纳入 skills 等 agent 能力资产；这些内容面向 agent 与人共同阅读，可被拷贝或链接到其他 Trae 项目中使用。
 
-> 给后续 agent 的提示：本仓库的「任务」不是写应用代码，而是持续打磨 `.trae/rules/` 这套规则文件。对本仓库的改动，几乎都是在编辑它们。根目录的 `CLAUDE.md` 只是本仓库的简短指引，不要与产物混淆。
+> 给后续 agent 的提示：`agent-playbook` 的「任务」不是写应用代码，而是持续打磨 rules、skills 等 agent 工作手册资产。当前改动主要集中在 `.trae/rules/`；根目录的 `CLAUDE.md` 只是本仓库的简短指引，不要与产物混淆。
 
 ## 仓库结构
 
-规则文件按 Trae 约定放在 `.trae/rules/`，每个文件用顶部 `---` frontmatter 声明**生效方式**（`alwaysApply` / `globs` / `description` / `scene`），Trae 会按对话内容与所涉文件自动携带相关规则，无需全程加载。
+当前规则文件按 Trae 约定放在 `.trae/rules/`，每个文件用顶部 `---` frontmatter 声明**生效方式**（`alwaysApply` / `globs` / `description` / `scene`），Trae 会按对话内容与所涉文件自动携带相关规则，无需全程加载。后续新增 skills 时，也应在本节补充对应目录与使用方式。
 
 | 文件 | 生效方式 | 内容 |
 | --- | --- | --- |
 | [`main.md`](./.trae/rules/main.md) | 始终生效（`alwaysApply: true`） | **主索引**：五大领域导览 + 高频遵守的核心原则与关键禁令 |
-| [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 AI 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
+| [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 agent 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
 | [`languages/common.md`](./.trae/rules/languages/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
 | [`languages/{js,python,go,cpp}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 库选型 + 工具链**：版本锁定与语法（§0）、各主题该语言的具体做法、分场景库选型表与选型判据、工具链与 pre-commit（§10） |
 | [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
@@ -31,7 +31,7 @@
 | 二、编码实践 | 怎么写 | 命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全 | `main.md` + `languages/`（`common.md` 通用 + 分语言文件） |
 | 三、项目与工程化 | 项目怎么搭 | 项目结构、配置与环境管理、日志与可观测性 | `main.md` + `project.md` |
 | 四、版本与协作 | 怎么协作发布 | 提交规范、SemVer、changelog、依赖治理、CI/CD | `main.md` + `versioning.md` + `git-commit-message.md` |
-| 五、与 AI 协作 | AI 如何工作 | 思考在先、简单优先、外科式改动、目标驱动、善用 Trae 上下文与工具、沟通交付、设计文档与规则同步（行为准则，优先级最高） | `ai-collaboration.md` |
+| 五、与 agent 协作 | agent 如何工作 | 思考在先、简单优先、外科式改动、目标驱动、善用 Trae 上下文与工具、沟通交付、设计文档与规则同步（行为准则，优先级最高） | `ai-collaboration.md` |
 
 > 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用各领域中与语言无关的通用原则，并套用对应生态的等价工具。
 
@@ -48,11 +48,11 @@
 
 ## 使用方式
 
-将这份规范应用到其他 Trae 项目：
+将 `agent-playbook` 应用到其他 Trae 项目：
 
 - **拷贝**：把整个 `.trae/rules/` 目录复制到目标项目根目录（含 `languages/` 子目录）。Trae 会自动识别并按各文件的生效方式加载，无需额外配置。
 - **校验生效方式**：在 Trae 的「设置 → 规则」面板可查看/调整各项目规则的应用模式（始终生效 / 指定文件 / 智能生效 / 手动 `#Rule`）。
 - **同步**：也可用 git submodule / 软链等方式引入 `.trae/rules/`，便于统一更新。
-- **全局复用**：希望某些准则（如「与 AI 协作」）在所有项目生效，可在 Trae「设置 → 规则 → 全局规则」中粘贴对应内容。
+- **全局复用**：希望某些准则（如「与 agent 协作」）在所有项目生效，可在 Trae「设置 → 规则 → 全局规则」中粘贴对应内容。
 
 应用后按目标项目实际情况裁剪（如只用其中某些领域、调整版本基线）。
