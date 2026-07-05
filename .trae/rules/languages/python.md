@@ -111,6 +111,7 @@ alwaysApply: false
 | 子进程 / 命令执行 | 标准库 [`subprocess`](https://docs.python.org/3/library/subprocess.html) | 标准库 | 用 `subprocess.run`，传参数列表不用 `shell=True`；避免 `sh` 等不支持 Windows 的库。 |
 | 序列化 / 高性能 JSON | [`orjson`](https://github.com/ijl/orjson) | 按需 | 仅性能敏感时引入，否则用标准库 `json`。 |
 | 异步任务编排 | 标准库 [`asyncio`](https://docs.python.org/3/library/asyncio.html) | 标准库 | `asyncio.gather`/`TaskGroup`/`timeout`；并发限流用 `asyncio.Semaphore`。 |
+| 进程内缓存 | [`cachetools`](https://github.com/tkem/cachetools) | 按需 | 仅当标准库 `functools.cache` / `lru_cache` 不够、需要 TTL / LFU / 显式缓存对象时引入。 |
 | 密码哈希 | [`argon2-cffi`](https://github.com/hynek/argon2-cffi) | 必须 | 密码用 `argon2`；随机数/令牌用标准库 `secrets`，不用 `random`。 |
 | HTTP 服务运行 | [`uvicorn`](https://github.com/encode/uvicorn) | 必须 | ASGI 服务器，配 `fastapi`；多 worker 生产用 `gunicorn` + uvicorn worker。 |
 | 缓存 / Redis | [`redis`](https://github.com/redis/redis-py) | 按需 | 官方客户端，支持 asyncio。 |
