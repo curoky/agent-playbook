@@ -81,6 +81,8 @@ alwaysApply: false
 > - **必须**：能大幅简化代码或 API 明显更好、更不易出错（如 `zod`），作为默认选择。
 > - **按需**：与平台/标准能力差别不大、仅有性能或便利收益（如 `picocolors`），仅在确有需求时引入。
 > - **平台优先**：现代运行时（Node 22+、浏览器）原生能力够用时不引库，如 `crypto.randomUUID()`、`structuredClone`、`fetch`、`URL`、`Intl`。
+>
+> **WebUI 技术栈优先「AI 友好」**：前端/WebUI 选型在满足上述标准的前提下，优先选对 AI agent 协作更友好的技术栈——即同时具备①**文档全、语料多**（社区广、训练数据充分，AI 熟悉其 API、幻觉少）、②**约定式、模式固定**（约定优于配置、结构可预测，AI 好遵循、输出一致）、③**强类型约束**（类型完备、约束强，AI 生成的错误能被 `tsc`/类型检查接住）、④**源码可见可改**（组件/逻辑源码在仓库内，AI 可直接读改而非隔着黑盒依赖）。此为**同等条件下的加权因素**，不作为「是否引入」的否决项，也不凌驾于「现代化/主流/积极维护」之上。
 
 ### 速查表
 
@@ -108,6 +110,7 @@ alwaysApply: false
 | 日期格式化（仅展示） | [`date-fns`](https://github.com/date-fns/date-fns) | 按需 | 只做格式化/相对时间、不需完整时区运算时的轻量选择。 |
 | 状态管理（前端） | [`zustand`](https://github.com/pmndrs/zustand) | 按需 | 轻量全局状态；复杂数据流再考虑 `redux-toolkit`。 |
 | 数据请求 / 缓存（前端） | [`@tanstack/query`](https://github.com/TanStack/query) | 必须 | 服务端状态的缓存、重试、失效管理。 |
+| UI 组件库（React WebUI） | [`Radix Themes`](https://github.com/radix-ui/themes) | 按需 | React WebUI 默认选择；自带主题/样式系统（不依赖 Tailwind），无障碍性由 Radix 原语保证，官方文档完备。仅适用 React 栈。 |
 | 队列 / 后台任务 | [`bullmq`](https://github.com/taskforcesh/bullmq) | 必须 | 基于 Redis 的可靠任务队列。 |
 | WebSocket / 实时 | [`ws`](https://github.com/websockets/ws) | 按需 | 底层 WS；需房间/降级用 `socket.io`。 |
 | 数据库迁移 | `drizzle-kit` | 必须 | 与 `drizzle-orm` 配套生成与管理迁移。 |
@@ -122,6 +125,7 @@ alwaysApply: false
 - **子进程 `execa` vs `node:child_process`**：需要**跨平台、Promise、流处理、自动转义**用 `execa`；脚本里跑一条简单命令、无复杂参数，直接用内置 `node:child_process`。
 - **测试 `vitest` vs `node:test`**：应用/前端、需要 mock/快照/覆盖率一体化用 `vitest`；零依赖的纯 Node 工具库可用内置 `node:test` 减少依赖。
 - **ID `nanoid` vs `crypto.randomUUID()`**：需要标准 UUID（数据库主键、跨系统）直接用内置 `crypto.randomUUID()`，不引库；需要**更短、URL 友好、可定制字母表**的 ID 才用 `nanoid`。
+- **UI 组件库 `Radix Themes` vs 其他方案**：**React** 项目默认 `Radix Themes`——它是传统 npm 组件库（作依赖安装、升级走包管理器），自带主题/样式系统、不依赖 Tailwind，无障碍性由底层 Radix 原语保证。选它的核心理由是**对 AI agent 友好**：React + TS 类型完备、约束强（强类型约束）；主题令牌与组件 API 约定式、模式固定（约定式）；官方文档完备、社区语料充分、AI 对其 API 熟悉少幻觉（文档全/语料多）。**不用 React** 时不适用，改选对应生态的成熟组件库（Vue 用 Element Plus、Svelte 用 shadcn-svelte 等），本规则暂不为其展开推荐。若需要「组件源码进仓库、可自由改」的形态，可改用同属 Radix 生态的 `shadcn/ui`（Radix 原语 + Tailwind），代价是升级靠 copy/diff 而非包管理器。
 
 > 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
 
