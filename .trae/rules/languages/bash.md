@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Bash/Shell 脚本规范（编码实践 + 工具链）
 
-> 本文件汇总 Bash/Shell 脚本的**编码实践**（[`common.md`](./common.md) 的 Shell 明细）与**工具链**。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，跨语言工具链约定见 [`toolchain.md`](../toolchain.md)。基线以 **Bash** 为准（`#!/usr/bin/env bash` + `set -euo pipefail`）。
+> Bash/Shell 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。基线以 **Bash** 为准（`#!/usr/bin/env bash` + `set -euo pipefail`）。
 >
 > **何时不该用 Shell**：脚本一旦出现复杂数据结构、非平凡的字符串/数值处理、需要单元测试的业务逻辑，就改用 Python/Go 重写，不要硬撑 Bash。Shell 只适合「粘合命令、编排流程」。
 
@@ -73,7 +73,7 @@ alwaysApply: false
 
 ## 10. 工具链
 
-> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

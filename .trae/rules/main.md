@@ -4,11 +4,11 @@ alwaysApply: true
 
 # 通用编码规范（主文件）
 
-本文件是 AI 助手在本项目中编写代码时应遵循的规范主索引，规范分为五个领域：**技术栈与工具基线**（用什么）、**编码实践**（怎么写）、**项目与工程化**（项目怎么搭）、**版本与协作**（怎么协作发布）、**与 AI 协作**（AI 如何工作）。其中「与 AI 协作」是行为准则、优先级最高，单独放在 [`ai-collaboration.md`](./ai-collaboration.md)（始终生效）。
+本文件是 AI 助手编写代码时的主索引，覆盖五个领域：**技术栈与工具基线**、**编码实践**、**项目与工程化**、**版本与协作**、**与 AI 协作**。其中 [`ai-collaboration.md`](./ai-collaboration.md) 是行为准则，优先级最高。
 
-> 本文件与 [`ai-collaboration.md`](./ai-collaboration.md) 为「始终生效」规则；技术栈、工具链、编码实践、项目工程化、版本协作的明细按场景生效（见各文件 frontmatter），无需全程加载，Trae 会按对话内容与所涉文件自动携带。编写 Markdown 等文档时另见 [`documentation.md`](./documentation.md)（编辑文档文件时自动生效）。
+> 本文件与 [`ai-collaboration.md`](./ai-collaboration.md) 始终生效；各领域明细按 frontmatter 场景生效。编辑 Markdown 等文档时另见 [`documentation.md`](./documentation.md)。
 >
-> 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用各领域中与语言无关的通用原则，并套用对应生态的等价工具。
+> 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
 
 ## 一、技术栈与工具基线
 
@@ -16,13 +16,13 @@ alwaysApply: true
 
 **核心原则**：能用成熟、维护良好的开源库解决的问题，就不要自己手写；不为已有优秀库覆盖的能力（路径、日期、参数解析等）重复造轮子，优先用库的高层 API。
 
-- **选型标准**：同时满足现代化（原生 TS 类型、ESM、async/await、类型注解；Go 用泛型与模块）、主流（社区广泛采用、生产验证充分）、积极维护（近期持续发布与响应）三项；不确定就先核实最新发布时间与活跃度。
-- **谨慎引入高风险依赖**：对**久未维护**（如一年以上无发布/无提交、issue 长期无人响应）、**star 数偏少**、**过于小众**（生产案例稀少、社区薄弱、文档缺失）的开源组件保持高度谨慎——除非用户手动指定，否则不主动引入；确需引入时先在沟通中说明风险（维护、安全、可替代性）并请用户确认，优先选标准库或更主流的成熟替代品。
+- **选型标准**：同时满足现代化（原生 TS 类型、ESM、async/await、类型注解；Go 用泛型与模块）、主流（社区广泛采用、生产验证充分）、积极维护；不确定就核实最新发布时间与活跃度。
+- **谨慎引入高风险依赖**：久未维护（一年以上无发布/提交、issue 长期无人响应）、star 偏少、过于小众的组件，除非用户指定，否则不主动引入；确需引入时先说明维护、安全、可替代性风险并请用户确认，优先选标准库或更主流替代品。
 - **避免停更/被取代的库**：如新项目不直接用 `moment`、`request`、`lodash`（JS）、`github.com/pkg/errors`（Go，改用标准库 `errors` + `%w`）等。
-- **引入判定**：能**大幅简化代码**或 API **明显更好、更不易出错**的（如 `zod`、`typer`、`pydantic`）作为默认选择；与标准库差别不大、仅有性能/便利收益的（如 `orjson`、`picocolors`）按需引入，否则优先标准库。**Go 尤其推崇「标准库优先」**，引入第三方库前先确认标准库（`net/http`、`encoding/json`、`log/slog`、`slices`、`maps` 等）是否已够用。
-- **不因体积/依赖复杂度而拒绝**：库本身满足选型标准（靠谱、维护良好）且引入后能大幅简化代码、提升可读性与可维护性时，就果断引入，不要把「打包体积变大」或「依赖变复杂」当作不引入的理由。体积等因素只影响「在多个合格候选中选哪个」（如前端体积敏感时选 `valibot` 而非 `zod`），不作为「是否引入」的否决项。
+- **引入判定**：能大幅简化代码或 API 明显更不易出错的（如 `zod`、`typer`、`pydantic`）默认引入；与标准库差别不大、仅有性能/便利收益的（如 `orjson`、`picocolors`）按需引入，否则优先标准库。Go 引第三方库前先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps` 等标准库是否够用。
+- **不因体积/依赖复杂度而拒绝**：库满足选型标准且能显著提升可读性与可维护性时，不把体积或依赖复杂度作为否决项；这些因素只影响多个合格候选之间的选择（如前端体积敏感时选 `valibot` 而非 `zod`）。
 
-**分语言的选型明细表与选型判据见** [`languages/js.md`](./languages/js.md)、[`languages/python.md`](./languages/python.md)、[`languages/go.md`](./languages/go.md)、[`languages/cpp.md`](./languages/cpp.md) 的「库选型」节（编辑对应语言源码时自动生效，聊选型时智能携带）。
+分语言选型表与判据见 [`languages/js.md`](./languages/js.md)、[`languages/python.md`](./languages/python.md)、[`languages/go.md`](./languages/go.md)、[`languages/cpp.md`](./languages/cpp.md) 的「库选型」节。
 
 ### 2. 使用现代语言版本与语法
 
@@ -41,15 +41,15 @@ alwaysApply: true
 | Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
 | Bash | 4.4 | 5.x（`#!/usr/bin/env bash` + `set -euo pipefail`） |
 
-各语言的版本锁定方式、推荐语法与禁止写法见 `languages/` 下的分语言文件 [`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md)、[`bash.md`](./languages/bash.md) 的「§0 语言版本与语法」（编辑对应源文件时自动生效）。
+各语言的版本锁定方式、推荐语法与禁止写法见 `languages/{js,python,go,cpp,bash}.md` 的「§0 语言版本与语法」。
 
 ### 3. 统一工具链
 
-工具链明细见各语言文件 [`languages/{js,python,go,cpp}.md`](./languages/) 的「§10 工具链」（包管理、Lint、类型检查、测试、构建、pre-commit），跨语言通用约定见 [`toolchain.md`](./toolchain.md)（搭脚手架、配工具时查阅）。要点：配置文件与锁文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`，Bash 用 `shfmt`+`shellcheck`+`bats`。
+工具链明细见 `languages/{js,python,go,cpp,bash}.md` 的「§10 工具链」，跨语言约定见 [`toolchain.md`](./toolchain.md)。要点：配置文件与锁文件入库；本地、pre-commit、CI 跑同一套检查；JS 用 `pnpm`+`biome`+`tsc`+`vitest`，Python 用 `uv`+`ruff`+`mypy`/`pyright`+`pytest`，Go 用 `go mod`+`gofmt`/`goimports`+`golangci-lint`+`go vet`+`go test`，C++ 用 `Bazel`(bzlmod)+`clang-format`+`clang-tidy`+`Catch2`，Bash 用 `shfmt`+`shellcheck`+`bats`。
 
 ## 二、编码实践
 
-> 本域各主题的核心原则与语言无关要点见 [`languages/common.md`](./languages/common.md)，各语言特有写法（含库选型）见同目录 [`js.md`](./languages/js.md)/[`python.md`](./languages/python.md)/[`go.md`](./languages/go.md)/[`cpp.md`](./languages/cpp.md)/[`bash.md`](./languages/bash.md)（编辑对应源文件时自动生效）。主文件仅保留每节的核心原则与关键禁令。
+> 跨语言要点见 [`languages/common.md`](./languages/common.md)，语言特有写法与库选型见 `languages/{js,python,go,cpp,bash}.md`。主文件只保留核心原则与关键禁令。
 
 - **1. 命名与代码风格**：命名即文档，用完整可检索的名字（布尔加 `is`/`has` 前缀）；遵循语言惯例大小写（Go 用 `MixedCaps`、靠首字母大小写控制导出）；避免魔法值；格式全交给 `biome` / `ruff format` / `gofmt`，不手写、不在 review 讨论。
 - **2. 函数与模块设计**：单一职责、小而专一；参数超 3 个改具名对象、避免布尔陷阱参数；核心逻辑写纯函数、副作用推到边界；显式导出最小公共 API（TS 具名导出、Python `__all__`、Go 靠首字母大写控制导出且接口宜小）；依赖抽象而非实现，避免循环依赖。

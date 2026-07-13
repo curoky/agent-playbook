@@ -5,11 +5,11 @@ alwaysApply: false
 
 # 统一工具链（跨语言）
 
-> 本文件是主规范「技术栈与工具基线 · 统一工具链」的**跨语言通用约定**，在搭项目脚手架、配工具时查阅。**各语言的具体工具表与 pre-commit 命令**见 `languages/` 下分语言文件的「§10 工具链」：[`js.md`](./languages/js.md)、[`python.md`](./languages/python.md)、[`go.md`](./languages/go.md)、[`cpp.md`](./languages/cpp.md)、[`bash.md`](./languages/bash.md)（编辑对应源文件时自动生效）。
+> 跨语言通用约定。各语言工具表与 pre-commit 命令见 `languages/{js,python,go,cpp,bash}.md` 的「§10 工具链」。
 
 ## 核心原则
 
-- 用统一现代的工具链，配置入库，本地与 CI 命令一致、结果可复现。
+- 用统一现代的工具链，配置入库，本地/pre-commit/CI 命令一致、结果可复现。
 - 优先选速度快、配置少、能合并多职责的工具（如 `biome`、`ruff` 一体化 Lint + 格式化）。
 
 ## 通用要求
@@ -21,5 +21,5 @@ alwaysApply: false
 
 ## 提交前检查（pre-commit）与 CI 一致性
 
-- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**（语言无关、配置单一 `lefthook.yml` 入库、支持并行执行与暂存文件过滤 `{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile。各语言在 pre-commit 挂载的具体命令见对应 `languages/{语言}.md` 的「§10 工具链」。
-- **CI 中重复执行同一套检查**（格式化校验、Lint/静态分析、类型检查/vet、测试），确保与本地、pre-commit 完全一致，避免「本地过、CI 挂」。
+- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤 `{staged_files}` + `glob`，替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile。具体命令见对应语言文件 §10。
+- **CI 中重复执行同一套检查**：格式化校验、Lint/静态分析、类型检查/vet、测试与本地、pre-commit 完全一致，避免「本地过、CI 挂」。

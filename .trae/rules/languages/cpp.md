@@ -6,7 +6,7 @@ alwaysApply: false
 
 # C++ 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 C++ 的**编码实践**（[`common.md`](./common.md) 的 C++ 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 C++ 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（Bazel / clang-tidy / sanitizers / CI）见 [`toolchain.md`](../toolchain.md)。基线为 C++23/20。
+> C++ 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。基线为 C++23/20。
 
 ## 0. 语言版本与语法
 
@@ -75,9 +75,7 @@ alwaysApply: false
 
 ## 9. 库选型
 
-> **选型标准**（库须同时满足）：现代化（支持 C++20/23、提供 Bazel 模块或可被 bzlmod 引入）、主流、积极维护。
-> **标准库优先**：`<memory>`（智能指针）、`<optional>`、`<variant>`、`<expected>`（C++23）、`<chrono>`、`<filesystem>`、`<span>`、`<string_view>`、`<ranges>`、`<algorithm>`、`<random>`、并发原语（`<thread>`/`<mutex>`/`<atomic>`）等够用时不引第三方。
-> **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件除非用户手动指定，否则不主动引入；确需引入先说明风险并请用户确认。引入务必走 Bazel（`MODULE.bazel` 声明 `bazel_dep`、`MODULE.bazel.lock` 锁版本），避免手动 vendoring。
+> 继承 [`main.md`](../main.md) 的选型规则，并要求支持 C++20/23、提供 Bazel 模块或可被 bzlmod 引入。标准库够用时不引第三方；高风险依赖先说明风险并确认。引入务必走 Bazel（`MODULE.bazel` 声明 `bazel_dep`、`MODULE.bazel.lock` 锁版本），避免手动 vendoring。
 
 ### 速查表
 
@@ -117,11 +115,11 @@ alwaysApply: false
 - **RPC `grpc` vs `fbthrift`**：新建**跨语言**服务默认 `grpc`（生态最广、配 protobuf、社区与工具链成熟）；仅在**对接既有 Thrift/Facebook 生态**或需 fbthrift 特有能力（与 `folly`/`wangle` 深度整合的异步/流式）时用 `fbthrift`，并接受其 `folly`/`wangle` 重依赖。
 - **是否引入 `folly`/`wangle` 与 `Boost`/`abseil`**：仅当标准库确有缺口时引入，且**只依赖用到的子库**，不整包拉入；与标准库重叠的功能（智能指针、`optional`、`filesystem`）一律用标准库。`folly`/`wangle` 体量大、编译重、依赖链长，仅在**高并发服务端确需其性能/能力**时引入，普通项目优先 `abseil` 或标准库。
 
-> 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+> 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
 
 ## 10. 工具链
 
-> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

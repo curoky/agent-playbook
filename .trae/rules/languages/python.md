@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Python 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 Python 的**编码实践**（[`common.md`](./common.md) 的 Python 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Python 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`uv` / `ruff` / CI / pre-commit）见 [`toolchain.md`](../toolchain.md)。
+> Python 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。
 
 ## 0. 语言版本与语法
 
@@ -78,13 +78,11 @@ alwaysApply: false
 
 ## 9. 库选型
 
-> **选型标准**（库须同时满足）：现代化、主流、积极维护。
-> **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件除非用户手动指定，否则不主动引入；确需引入先说明风险并请用户确认。
-> **引入判定**：
+> 继承 [`main.md`](../main.md) 的选型规则：现代化、主流、积极维护；高风险依赖先说明风险并确认。Python 还遵循：
 >
-> - **必须**：能大幅简化代码或 API 明显更好、更不易出错（如 `pydantic`、`typer`），作为默认选择。
-> - **按需**：与标准库差别不大、仅有性能或便利收益（如 `orjson`），仅在确有需求时引入。
-> - **标准库优先**：`pathlib`、`zoneinfo`、`subprocess`、`logging`、`secrets` 等够用时不引第三方（数据模型默认用 `pydantic`，仅无需校验的轻量场景才用标准库 `dataclasses`）。
+> - **必须**：能大幅简化代码或 API 明显更不易出错（如 `pydantic`、`typer`）。
+> - **按需**：与标准库差别不大、仅有性能或便利收益（如 `orjson`）。
+> - **标准库优先**：`pathlib`、`zoneinfo`、`subprocess`、`logging`、`secrets` 等够用时不引第三方；数据模型默认 `pydantic`，仅无需校验的轻量场景才用 `dataclasses`。
 
 ### 速查表
 
@@ -129,11 +127,11 @@ alwaysApply: false
 - **JSON `orjson` vs 标准库 `json`**：默认标准库 `json`；仅当**序列化是热点路径**（高 QPS API、大批量）时换 `orjson`（更快、原生支持 `datetime`/`numpy`）。
 - **HTTP `httpx` vs `requests`**：新项目一律 `httpx`（同步异步统一、API 与 requests 近似）；维护老代码可沿用 `requests`，不新引入 `aiohttp`（除非需要其特定服务端能力）。
 
-> 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+> 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
 
 ## 10. 工具链
 
-> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Go 语言规范（编码实践 + 库选型）
 
-> 本文件汇总 Go 的**编码实践**（[`common.md`](./common.md) 的 Go 明细）与**库选型**（「技术栈与工具基线 · 优先复用成熟的开源组件」的 Go 明细）。通用核心原则见 [`common.md`](./common.md)，版本基线总表见 [`main.md`](../main.md)，工具链（`go mod` / `golangci-lint` / CI）见 [`toolchain.md`](../toolchain.md)。
+> Go 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。
 
 ## 0. 语言版本与语法
 
@@ -75,8 +75,7 @@ alwaysApply: false
 
 ## 9. 库选型
 
-> **标准库优先**：Go 标准库覆盖度高，下表「标准库」项一律优先使用，仅在确有缺口时引入第三方库。引入前先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps`、`errors`、`context` 等是否已够用。
-> **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件除非用户手动指定，否则不主动引入；确需引入先说明风险并请用户确认。
+> Go 标准库优先：下表「标准库」项一律优先使用；引第三方前先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps`、`errors`、`context` 等是否够用。高风险依赖仍按 [`main.md`](../main.md) 先说明风险并确认。
 
 ### 速查表
 
@@ -121,11 +120,11 @@ alwaysApply: false
 - **DI `google/wire` vs 手动注入**：小到中型项目**手动构造依赖**即可，最清晰；仅当依赖图庞大、手写 wiring 成为负担时引入编译期 `wire`，不用运行时反射型 DI 容器。
 - **进度条 `schollz/progressbar` vs `vbauerster/mpb`**：只需**单条**进度条、追求 API 极简（`NewOptions` + `Add`）用 `progressbar`；需要**多条并发进度条、动态增删、丰富装饰器（ETA/字节计数/宽度对齐）**用 `mpb`（配合 goroutine + `WaitGroup`），代价是 API 更重、学习曲线更陡。一次性脚本用 `fmt.Printf` 即可，别引依赖。
 
-> 注：以上为截至 2026-06 的推荐默认项。项目已有等价成熟方案则沿用，保持技术栈一致；定期复核维护状态，及时替换停更依赖。
+> 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
 
 ## 10. 工具链
 
-> 跨语言通用要求（配置入库、本地/pre-commit/CI 一致、CI 重复执行同一套检查）见 [`toolchain.md`](../toolchain.md)。
+> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |
