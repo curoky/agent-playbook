@@ -5,7 +5,7 @@ alwaysApply: false
 
 # 文档编写规范
 
-> 本文件是编写 Markdown 等文档（README、设计文档、指南等）时遵循的规范，聚焦可读性与表达克制。源码内注释/docstring 规范见 [`languages/common.md`](./languages/common.md) 的「注释与文档」节。
+> 本文件是编写 Markdown 等文档（README、设计文档、指南等）时遵循的规范，聚焦可读性与表达克制。源码内注释/docstring 规范见对应语言规范（`languages/{js,python,go,cpp,bash}.md`）的「注释与文档」节。
 
 ## 1. 行内代码（inline code）保持克制
 

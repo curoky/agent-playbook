@@ -6,7 +6,7 @@ alwaysApply: false
 
 # C++ 语言规范（编码实践 + 库选型）
 
-> C++ 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。基线为 C++23/20。
+> 本文件自洽：编写 C++ 时所需的编码实践、日志、库选型与工具链均在此。基线为 C++23/20。跨语言版本基线与工程化（结构/配置/CI/发版）可选参考 `engineering.md`（非必需同时加载）。
 
 ## 0. 语言版本与语法
 
@@ -19,17 +19,20 @@ alwaysApply: false
   - `std::string_view`/`std::span` 传递只读视图，避免不必要拷贝；`constexpr`/`consteval` 把计算前移到编译期。
   - Concepts 约束模板（替代 SFINAE）、Ranges（`std::ranges::`、视图与管道 `|`）替代手写循环与迭代器对。
   - `<format>` 风格的格式化：默认用 [`fmt`](https://github.com/fmtlib/fmt)（`fmt::format`/`fmt::print`），替代 `printf` 与 iostream 拼接；`<chrono>` 处理时间。
+- **新语法以可读性为准绳**：新写法更难懂时（过度模板体操）选直观写法，不为「显得现代」而用。
 - **禁止**：裸 `new`/`delete` 与裸 owning 指针管理资源（用智能指针/容器/RAII）、C 风格强制转换（用 `static_cast`/`reinterpret_cast` 等具名转换）、`using namespace std;` 写在头文件或全局作用域、宏充当常量/函数（用 `constexpr`/`inline` 函数/`enum class`）、裸数组与 `strcpy`/`sprintf` 等不安全 C API（用 `std::array`/`std::vector`/`fmt::format`）、未初始化变量、在头文件定义非 `inline` 的非模板函数/全局变量。
 
 ## 1. 命名与代码风格
 
 - **大小写惯例**：类型/类 `PascalCase`，函数/变量在团队内统一（常见 `snake_case` 或 `camelCase`，跟随既有代码库），常量/`enum class` 枚举值 `PascalCase` 或 `kCamelCase`，宏（应尽量避免）`UPPER_SNAKE_CASE`；成员变量用统一后缀/前缀（如 `member_`）；命名空间小写。
+- **命名即文档**：用完整可检索的名字，布尔加 `is`/`has` 前缀。
 - **避免魔法值**：字面量提取为 `constexpr` 常量与 `enum class`。
-- **格式工具**：交给 `clang-format` 自动处理。
+- **格式不进 review**：交给 `clang-format` 自动处理，review 中不讨论格式。
 
 ## 2. 函数与模块设计
 
-- **参数精简**：参数超过 3 个时用 config struct + 聚合初始化；入参按所有权语义传递（只读用 `const&` 或 `std::string_view`/`std::span`，转移所有权用值 + `std::move`，不滥用裸指针）。
+- **单一职责、小而专一**：出现「阶段性注释」、超过一屏、或函数名需用「and」才能描述时 → 拆成更小的具名函数。
+- **参数精简**：参数超过 3 个时用 config struct + 聚合初始化；入参按所有权语义传递（只读用 `const&` 或 `std::string_view`/`std::span`，转移所有权用值 + `std::move`，不滥用裸指针）；避免布尔陷阱参数。
 - **明确公共 API**：头文件只暴露公共声明、实现细节放 `.cpp` 或 `detail`/匿名命名空间、类成员默认 `private`（接口优先 C++20 modules 的 `export`）。
 - **依赖倒置**：用抽象基类/纯虚接口或模板 + Concepts 约束，由外部注入实现。
 
@@ -39,9 +42,9 @@ alwaysApply: false
 - **在边界校验外部输入**：显式校验后转为强类型领域对象、对缓冲区/索引做边界检查。
 - **让非法状态不可表示**：用 `enum class`、`std::variant` + `std::visit` 建模互斥状态，强类型包装裸标量（避免 `int`/`bool` 满天飞）。
 - **避免「可能不存在」的隐式约定**：用 `std::optional<T>` 表达「可能缺失」，引用/`gsl::not_null` 表达「必然存在」，避免裸指针兼作哨兵。
-- **可预期错误用值表达**：用 `std::expected<T, E>`（C++23；C++20 用 `tl::expected`）表达可失败结果，而非裸异常或整型错误码。
-- **异常用于不可恢复错误**：按 `const&` 捕获具体类型、不 `catch(...)` 后吞掉，析构函数不抛异常（标记 `noexcept`）。
-- **保留上下文**：用 `std::nested_exception`/`std::throw_with_nested` 或在 error 类型中携带因由。
+- **错误分流判据：可预期错误用值表达**：用 `std::expected<T, E>`（C++23；C++20 用 `tl::expected`）表达可失败结果，而非裸异常或整型错误码；**真正不可恢复**才 `throw`。
+- **捕获即处理**：按 `const&` 捕获具体类型、不 `catch(...)` 后吞掉，析构函数不抛异常（标记 `noexcept`）。
+- **重抛保根因**：用 `std::nested_exception`/`std::throw_with_nested` 或在 error 类型中携带因由。
 - **资源用 RAII 管理**：所有资源（内存、文件、锁、句柄）由对象生命周期管理——优先标准容器与智能指针（`std::unique_ptr` 独占、`std::shared_ptr` 共享），遵循「Rule of Zero」；用 `std::lock_guard`/`std::scoped_lock` 管锁，不裸 `new`/`delete`、不手动 `lock`/`unlock`、不裸 `fopen`/`malloc`。
 
 ## 4. 异步与并发
@@ -49,23 +52,26 @@ alwaysApply: false
 - **统一并发模型**：用 `std::jthread`（自动 join、支持 `stop_token`）或线程池、`std::async`/`std::future`，复杂异步用协程（C++20 `co_await`）或 `Asio`，不裸 `std::thread` 后忘记 join/detach。
 - **并发要并行**：用线程池/`std::async` 批量提交后汇聚 `future`，或并行算法 `std::execution::par`。
 - **限制并发度**：用固定大小线程池或 `std::counting_semaphore`。
-- **不吞异步异常**：确保 `future` 被取走以传播异常、线程函数内捕获并上报异常。
-- **支持取消与超时**：用 `std::stop_token`/`std::stop_source`（配合 `std::jthread`）协作式取消。
+- **生命周期闭环**：确保 `future` 被取走以传播异常、线程函数内捕获并上报异常；用 `std::stop_token`/`std::stop_source`（配合 `std::jthread`）协作式取消。
 - **保护共享状态**：用 `std::mutex` + `std::scoped_lock` 或 `std::atomic`，避免数据竞争，并用 TSan/ASan 检测。
 
 ## 5. 性能与优化
 
-- **基准可复现**：用 `google/benchmark` 写微基准；用 `perf`/`valgrind --tool=callgrind`/编译器优化报告定位热点。
+- **先测后调**：用 `google/benchmark` 写微基准；用 `perf`/`valgrind --tool=callgrind`/编译器优化报告定位热点，不靠直觉过早优化。
 - **避免常见浪费**：`reserve()` 预分配容器、用移动语义避免拷贝、按 `const&`/`string_view`/`span` 传只读视图、注意缓存局部性。
 
 ## 6. 注释与文档
 
+- **写 why 不写 what**：注释解释意图、权衡、坑与非显而易见的约束，不复述代码字面逻辑。
+- **同步与清理**：改代码同步更新注释；删死代码；`TODO`/`FIXME`/`HACK` 必须附负责人或 issue 链接。
 - **公共 API 文档**：在头文件用 Doxygen 风格注释（`@brief`/`@param`/`@return`，说明前置/后置条件与所有权语义）。
 
 ## 7. 测试规范
 
 - **框架**：用 `Catch2`，经 `bazel test //...` 统一运行；用 `GENERATE`/`SECTION` 覆盖多组用例与分支。
+- **测行为非实现**：针对公共接口与可观察行为断言，不断言私有细节。
 - **隔离与确定性**：用 `trompeloeil` 或对接口/模板做 fake；测试在 ASan/UBSan/TSan 下运行。
+- **覆盖优先级**：先覆盖核心逻辑、分支与边界，覆盖率作参考非目标；修 bug 先写能复现的失败用例再修。
 
 ## 8. 安全编码
 
@@ -73,9 +79,24 @@ alwaysApply: false
 - **安全使用加密**：随机数用 `libsodium` 或操作系统 CSPRNG，不用 `std::rand`。
 - **C++ 内存安全**：杜绝缓冲区溢出、越界访问、悬垂指针/引用、use-after-free、整型溢出——优先用边界安全的容器与 `std::span`/`at()`，避免裸指针运算与不安全 C API（`strcpy`/`sprintf`/`gets`）；CI 用 ASan/UBSan 与 `clang-tidy` 的 `cppcoreguidelines`/`bugprone` 检查兜底。
 
-## 9. 库选型
+## 9. 日志
 
-> 继承 [`main.md`](../main.md) 的选型规则，并要求支持 C++20/23、提供 Bazel 模块或可被 bzlmod 引入。标准库够用时不引第三方；高风险依赖先说明风险并确认。引入务必走 Bazel（`MODULE.bazel` 声明 `bazel_dep`、`MODULE.bazel.lock` 锁版本），避免手动 vendoring。
+- **用结构化日志库**：用 `spdlog`（基于 `fmt`）；禁止 `std::cout` 做正式日志（仅临时调试可用，提交前清理）。
+- **日志级别约定**：`debug`（开发细节）/`info`（关键流程节点）/`warn`（可恢复异常）/`error`（失败需关注）；生产默认 `info`。
+- **结构化字段**：带上下文字段（请求 ID、用户 ID、模块名），不靠字符串拼接。
+- **不在热路径滥打**：避免在循环/高频调用里打 `info`，防止刷屏与性能损耗。
+- **错误日志带上下文**：记录错误时带上因由（配合 §3「重抛保根因」）。
+- **不记敏感信息**：日志不输出口令、令牌、个人隐私数据。
+
+## 10. 库选型
+
+**选型元原则**（标准库优先、现代化、主流、积极维护）：
+
+- **标准库够用时不引第三方**；引入的库须支持 C++20/23、提供 Bazel 模块或可被 bzlmod 引入。
+- **选型标准**：满足现代化、主流（社区广泛采用、生产验证充分）、积极维护；不确定就核实最新发布时间与活跃度。
+- **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件，除非用户指定否则不主动引入；确需引入时先说明维护、安全、可替代性风险并请用户确认。
+- **不因体积/依赖复杂度而拒绝**：满足选型标准且能显著提升可读性与可维护性时，不把体积作为否决项；这些因素只影响多个合格候选之间的选择（如 `folly` 体量大，仅在确需其能力时引入）。
+- **引入务必走 Bazel**（`MODULE.bazel` 声明 `bazel_dep`、`MODULE.bazel.lock` 锁版本），避免手动 vendoring。
 
 ### 速查表
 
@@ -117,9 +138,9 @@ alwaysApply: false
 
 > 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
 
-## 10. 工具链
+## 11. 工具链
 
-> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
+> 跨语言工具链约定（配置/锁文件入库、本地/pre-commit/CI 一致）可选参考 `engineering.md` 工具链节。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

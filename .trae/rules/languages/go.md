@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Go 语言规范（编码实践 + 库选型）
 
-> Go 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。
+> 本文件自洽：编写 Go 时所需的编码实践、日志、库选型与工具链均在此。跨语言版本基线与工程化（结构/配置/CI/发版）可选参考 `engineering.md`（非必需同时加载）。
 
 ## 0. 语言版本与语法
 
@@ -18,17 +18,20 @@ alwaysApply: false
   - `errors.Is`/`errors.As` + `fmt.Errorf("...: %w", err)` 包装与判别错误，替代字符串比较与 `github.com/pkg/errors`。
   - `context.Context` 贯穿请求生命周期，传递取消、超时与请求级值。
   - `for range n`（整数范围循环，1.22+）、`range over func`（迭代器，1.23+）等惯用法。
+- **新语法以可读性为准绳**：新写法更难懂时选直观写法，不为「显得现代」而用。
 - **禁止**：用 `panic` 处理可预期错误（仅用于不可恢复的程序错误）、用 `ioutil.*`（已废弃，用 `os`/`io`）、裸 `goroutine` 不管理生命周期（见 §4）；忽略 `error`、滥用空 `interface{}`/`any` 见 §3。
 
 ## 1. 命名与代码风格
 
 - **大小写惯例**：标识符用 `MixedCaps`/`mixedCaps`（不用下划线），靠首字母大小写控制导出（大写导出、小写包内私有）；包名用简短小写单词、避免 `util`/`common` 等无意义名；缩写词保持统一大小写（`HTTPServer`、`userID`）。
+- **命名即文档**：用完整可检索的名字，布尔加 `is`/`has` 前缀（遵循 Go 惯例，如 `isValid`）。
 - **避免魔法值**：字面量提取为 `const` 块 + `iota`。
-- **格式工具**：交给 `gofmt` + `goimports` 自动处理（`goimports` 兼做 import 分组排序）。
+- **格式不进 review**：交给 `gofmt` + `goimports` 自动处理（`goimports` 兼做 import 分组排序），review 中不讨论格式。
 
 ## 2. 函数与模块设计
 
-- **参数精简**：参数超过 3 个时用 config struct 或 functional options 模式。
+- **单一职责、小而专一**：出现「阶段性注释」、超过一屏、或函数名需用「and」才能描述时 → 拆成更小的具名函数。
+- **参数精简**：参数超过 3 个时用 config struct 或 functional options 模式；避免布尔陷阱参数。
 - **明确公共 API**：靠首字母大小写控制导出、`internal/` 包限制可见性。
 - **依赖倒置**：在使用方定义小接口、由实现方隐式满足，由外部注入实现。
 - **避免循环依赖**：Go 中包级循环导入会直接编译报错，须及早分层。
@@ -39,9 +42,9 @@ alwaysApply: false
 - **在边界校验外部输入**：用 `go-playground/validator` 或显式校验后转为内部类型。
 - **让非法状态不可表示**：用具名类型 + `const`/`iota` 枚举与小接口约束取值范围。
 - **避免「可能不存在」的隐式约定**：用 `(T, bool)`/`(T, error)` 多返回值或指针明确表达「可能缺失」，注意 nil 指针解引用。
-- **可预期错误用值表达**：以 `error` 作为最后一个返回值显式返回（定义哨兵错误 `errors.New` 或自定义 error 类型）。
-- **异常用于不可恢复错误**：`panic` 仅用于真正不可恢复的情况；禁止忽略 `error`（不写 `_ = fn()` 除非确有理由并注明）、禁止 `if err != nil {}` 空处理。
-- **保留上下文**：用 `fmt.Errorf("...: %w", err)` 包装，并用 `errors.Is`/`As` 判别，不丢失根因。
+- **错误分流判据：可预期错误用值表达**：业务上可预期的失败以 `error` 作为最后一个返回值显式返回（定义哨兵错误 `errors.New` 或自定义 error 类型）；`panic` 仅用于真正不可恢复的情况。
+- **捕获即处理**：禁止忽略 `error`（不写 `_ = fn()` 除非确有理由并注明）、禁止 `if err != nil {}` 空处理。
+- **重抛保根因**：用 `fmt.Errorf("...: %w", err)` 包装，并用 `errors.Is`/`As` 判别，不丢失根因。
 - **资源清理可靠**：用 `defer` 确保文件/连接/锁等资源释放。
 
 ## 4. 异步与并发
@@ -49,23 +52,26 @@ alwaysApply: false
 - **统一并发模型**：用 goroutine + channel，每个 goroutine 都有明确的退出条件，不开后无人管。
 - **并发要并行**：独立任务用 `errgroup` 并发执行，不要串行。
 - **限制并发度**：用带缓冲 channel 作信号量或 `errgroup.SetLimit`。
-- **不吞异步异常**：不留泄漏的 goroutine；用 `recover` 兜底 goroutine panic。
-- **支持取消与超时**：用 `context.Context`（`WithCancel`/`WithTimeout`）贯穿调用链。
+- **生命周期闭环**：不留泄漏的 goroutine；用 `recover` 兜底 goroutine panic；用 `context.Context`（`WithCancel`/`WithTimeout`）贯穿调用链支持取消与超时。
 - **保护共享状态**：倡导「以通信共享内存」，必要时用 `sync.Mutex`，并以 `go test -race` 检测竞态。
 
 ## 5. 性能与优化
 
-- **基准可复现**：用 `go test -bench` 配 `testing.B` 写 benchmark，用 `pprof` 定位 CPU/内存热点。
-- **避免常见浪费**：预分配切片容量 `make([]T, 0, n)`、复用对象用 `sync.Pool`。
+- **先测后调**：用 `go test -bench` 配 `testing.B` 写 benchmark，用 `pprof` 定位 CPU/内存热点，不靠直觉过早优化。
+- **避免常见浪费**：预分配切片容量 `make([]T, 0, n)`、复用对象用 `sync.Pool`；规避 N+1、循环内重复 IO。
 
 ## 6. 注释与文档
 
+- **写 why 不写 what**：注释解释意图、权衡、坑与非显而易见的约束，不复述代码字面逻辑。
+- **同步与清理**：改代码同步更新注释；删死代码；`TODO`/`FIXME`/`HACK` 必须附负责人或 issue 链接。
 - **公共 API 文档**：用 doc 注释（紧贴声明、以被注释的标识符名开头，如 `// Parse parses ...`）。
 
 ## 7. 测试规范
 
 - **框架**：用标准库 `testing`，表驱动测试 + `t.Run` 子测试覆盖多组用例。
+- **测行为非实现**：针对公共接口与可观察行为断言，不断言私有细节。
 - **隔离与确定性**：外部依赖用接口 + `uber-go/mock` 或手写 fake，用 `t.Parallel()` 并以 `-race` 跑。
+- **覆盖优先级**：先覆盖核心逻辑、分支与边界，覆盖率作参考非目标；修 bug 先写能复现的失败用例再修。
 
 ## 8. 安全编码
 
@@ -73,9 +79,24 @@ alwaysApply: false
 - **杜绝注入**：SQL 用 `database/sql` 占位符 + `sqlc`，禁止拼接 SQL；用 `exec.Command(name, args...)` 不经 shell。
 - **安全使用加密**：密码用 `argon2`/`bcrypt` 哈希；随机数用 `crypto/rand`，不用 `math/rand`。
 
-## 9. 库选型
+## 9. 日志
 
-> Go 标准库优先：下表「标准库」项一律优先使用；引第三方前先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps`、`errors`、`context` 等是否够用。高风险依赖仍按 [`main.md`](../main.md) 先说明风险并确认。
+- **用结构化日志库**：用标准库 `log/slog` 输出结构化日志；禁止 `fmt.Println` 裸打印做正式日志（仅临时调试可用，提交前清理）。需极致性能再看 `zap`。
+- **日志级别约定**：`debug`（开发细节）/`info`（关键流程节点）/`warn`（可恢复异常）/`error`（失败需关注）；生产默认 `info`。
+- **结构化字段**：用 `slog` 的键值属性带上下文字段（请求 ID、用户 ID、模块名），不靠拼接字符串。
+- **不在热路径滥打**：避免在循环/高频调用里打 `info`，防止刷屏与性能损耗。
+- **错误日志带上下文**：记录错误时带上原始错误（配合 §3「重抛保根因」的 `%w`）。
+- **不记敏感信息**：日志不输出口令、令牌、个人隐私数据。
+
+## 10. 库选型
+
+**选型元原则**（标准库优先、现代化、主流、积极维护）：
+
+- **Go 标准库优先**：下表「标准库」项一律优先使用；引第三方前先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps`、`errors`、`context` 等是否够用。
+- **选型标准**：满足现代化（用泛型与模块）、主流（社区广泛采用、生产验证充分）、积极维护；不确定就核实最新发布时间与活跃度。
+- **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件，除非用户指定否则不主动引入；确需引入时先说明维护、安全、可替代性风险并请用户确认。
+- **避免停更/被取代的库**：如不用 `github.com/pkg/errors`（改用标准库 `errors` + `%w`）。
+- **不因体积/依赖复杂度而拒绝**：满足选型标准且能显著提升可读性与可维护性时，不把体积作为否决项；这些因素只影响多个合格候选之间的选择。
 
 ### 速查表
 
@@ -96,7 +117,7 @@ alwaysApply: false
 | HTTP 客户端重试 | 标准库 `net/http` + [`hashicorp/go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 按需 | 标准库客户端够用，需退避重试时引入。 |
 | 唯一 ID | [`google/uuid`](https://github.com/google/uuid) | 按需 | 生成 UUID。 |
 | 依赖注入 | [`google/wire`](https://github.com/google/wire) | 按需 | 编译期 DI；小项目手动注入即可，避免过度设计。 |
-| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须 | 聚合多 linter，见 [`toolchain.md`](../toolchain.md)。 |
+| Lint 聚合 | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须 | 聚合多 linter，见 §11。 |
 | 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | 必须 | 官方漏洞扫描，CI 强制。 |
 | PostgreSQL 驱动 | [`jackc/pgx`](https://github.com/jackc/pgx) | 必须 | Postgres 首选驱动，性能与功能优于 `lib/pq`；可配 `sqlc`/`sqlx`。 |
 | Redis 客户端 | [`redis/go-redis`](https://github.com/redis/go-redis) | 按需 | 主流 Redis 客户端。 |
@@ -122,9 +143,9 @@ alwaysApply: false
 
 > 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
 
-## 10. 工具链
+## 11. 工具链
 
-> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
+> 跨语言工具链约定（配置/锁文件入库、本地/pre-commit/CI 一致）可选参考 `engineering.md` 工具链节。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

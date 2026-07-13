@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Bash/Shell 脚本规范（编码实践 + 工具链）
 
-> Bash/Shell 明细：通用原则见 [`common.md`](./common.md)，版本基线见 [`main.md`](../main.md)，工具链通用约定见 [`toolchain.md`](../toolchain.md)。基线以 **Bash** 为准（`#!/usr/bin/env bash` + `set -euo pipefail`）。
+> 本文件自洽：编写 Shell 脚本所需的编码实践、日志与工具链均在此。基线以 **Bash** 为准（`#!/usr/bin/env bash` + `set -euo pipefail`）。跨语言工程化约定可选参考 `engineering.md`（非必需同时加载）。
 >
 > **何时不该用 Shell**：脚本一旦出现复杂数据结构、非平凡的字符串/数值处理、需要单元测试的业务逻辑，就改用 Python/Go 重写，不要硬撑 Bash。Shell 只适合「粘合命令、编排流程」。
 
@@ -26,7 +26,7 @@ alwaysApply: false
 - **大小写惯例**：函数与局部变量用 `snake_case`，常量与导出的环境变量用 `UPPER_SNAKE_CASE`；只读常量用 `readonly`/`declare -r`。
 - **变量必加引号**：一律 `"$var"`/`"${arr[@]}"`，防止词分割与通配符展开（除非确需展开）。
 - **局部化变量**：函数内变量一律 `local` 声明，避免污染全局命名空间。
-- **格式工具**：缩进、对齐、换行统一交给 `shfmt` 自动处理，不在 review 讨论格式。
+- **格式不进 review**：缩进、对齐、换行统一交给 `shfmt` 自动处理，review 中不讨论格式。
 
 ## 2. 函数与模块设计
 
@@ -71,9 +71,17 @@ alwaysApply: false
 - **临时文件安全**：用 `mktemp`/`mktemp -d` 创建，配 `trap ... EXIT` 清理，不用可预测的固定路径。
 - **不泄漏密钥**：密钥/令牌不硬编码进脚本、不打进日志；调试用 `set -x` 时注意敏感信息泄漏，用完 `set +x`。
 
+## 9. 日志
+
+- **分流输出**：正常结果输出到 stdout，日志与错误信息一律输出到 stderr（`>&2`），便于管道与重定向分离。
+- **加时间戳与级别**：非平凡脚本的日志带时间戳与级别前缀（如 `[INFO]`/`[ERROR]`），便于排错。
+- **不在热路径滥打**：批量循环中避免逐条刷屏式日志，防止淹没关键信息与拖慢脚本；必要时按批次或仅在状态变化时输出。
+- **错误日志带上下文**：报错时带上出错的命令、目标路径/参数与退出码（如 `echo "failed: cp $src -> $dst (exit $?)" >&2`），便于定位。
+- **不泄漏密钥**：日志不输出口令、令牌等敏感信息（与 §8 呼应）；调试 `set -x` 用完即 `set +x`。
+
 ## 10. 工具链
 
-> 跨语言要求见 [`toolchain.md`](../toolchain.md)：配置入库，本地/pre-commit/CI 一致。
+> 跨语言工具链约定（配置入库、本地/pre-commit/CI 一致）可选参考 `engineering.md` 工具链节。
 
 | 用途 | 工具 | 说明 |
 | --- | --- | --- |

@@ -6,29 +6,26 @@
 
 ## 仓库结构
 
-规则文件按 Trae 约定放在 `.trae/rules/`，顶部 frontmatter 声明生效方式（`alwaysApply` / `globs` / `description` / `scene`）。Trae 会按对话内容与所涉文件自动携带相关规则，无需全程加载。
+规则文件按 Trae 约定放在 `.trae/rules/`，顶部 frontmatter 声明生效方式（`alwaysApply` / `globs` / `description` / `scene`）。Trae 会按对话内容与所涉文件自动携带相关规则，无需全程加载。**无主索引文件**：每个规则文件自洽（加载后内容完整，不依赖其它文件同时加载），各自靠 frontmatter 在恰好需要时触发。
 
 | 文件 | 生效方式 | 内容 |
 | --- | --- | --- |
-| [`main.md`](./.trae/rules/main.md) | 始终生效（`alwaysApply: true`） | **主索引**：五大领域导览 + 高频遵守的核心原则与关键禁令 |
-| [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`） | 与 agent 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
-| [`languages/common.md`](./.trae/rules/languages/common.md) | 指定文件生效（`globs`：JS/TS/PY/GO/C++/Shell） | 编码实践各主题的**核心原则与语言无关要点**（命名、函数与模块、类型与错误、异步、性能、注释、测试、安全） |
-| [`languages/{js,python,go,cpp,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 库选型 + 工具链**：版本锁定与语法（§0）、各主题该语言的具体做法、分场景库选型表与选型判据、工具链与 pre-commit（§10） |
-| [`project.md`](./.trae/rules/project.md) | 智能生效（`description`） | 项目结构、配置与环境管理、日志与可观测性 |
-| [`versioning.md`](./.trae/rules/versioning.md) | 智能生效（`description`） | 提交规范、SemVer、changelog、依赖治理、CI/CD |
-| [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的规范 |
-| [`toolchain.md`](./.trae/rules/toolchain.md) | 智能生效（`description`） | 统一工具链的**跨语言通用约定**（配置/锁文件入库、pre-commit 与 CI 一致性）；各语言具体工具见 `languages/{语言}.md` §10 |
+| [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`，唯一常驻） | 与 agent 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
+| [`languages/{js,python,go,cpp,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 日志 + 库选型 + 工具链**：版本锁定与语法（§0）、各主题该语言的具体做法与跨语言判据（§1–8）、日志（§9，bash 为 §9）、分场景库选型表与选型判据（§10，bash 无）、工具链与 pre-commit（§11，bash 为 §10） |
+| [`engineering.md`](./.trae/rules/engineering.md) | 智能生效（`description`） | 工程化 9 节：项目结构、配置与环境、统一工具链（跨语言约束 + 对照表）、语言与工具版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD |
+| [`documentation.md`](./.trae/rules/documentation.md) | 指定文件生效（`globs`：Markdown 等文档） | 编写文档的可读性与表达克制规范 |
+| [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的完整格式规范 |
 
-> Trae 会递归读取 `.trae/rules/` 及其子目录（最多 3 层）。拷贝到其他项目时带上整个 `.trae/rules/` 目录，避免相对链接失效。
+> Trae 会递归读取 `.trae/rules/` 及其子目录（最多 3 层）。因每个文件自洽，拷贝时缺失个别文件也不致内容残缺；建议整目录带上以保引用（软提示）完整。
 
 ## 产物结构导览
 
-规范按五个领域组织，条目统一为「**核心原则** + 要点列表」：
+规范按五个领域组织（供人阅读的地图；**文件不与领域一一对应**，同一领域可能分布在多个自洽文件中），条目统一为「**核心原则** + 要点列表」：
 
-- **技术栈与工具基线**：开源组件、现代语言版本与语法、统一工具链。入口为 `main.md` + `toolchain.md`；库选型、语法、工具链明细在 `languages/{语言}.md`。
-- **编码实践**：命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全。入口为 `main.md` + `languages/`。
-- **项目与工程化**：项目结构、配置与环境管理、日志与可观测性。入口为 `project.md`。
-- **版本与协作**：提交规范、SemVer、changelog、依赖治理、CI/CD。入口为 `versioning.md` + `git-commit-message.md`。
+- **技术栈与工具基线**：开源组件选型、现代语言版本与语法、统一工具链。语法/版本锁定见 `languages/{语言}.md` §0，版本基线总表与跨语言工具链约定见 `engineering.md`，库选型见 `languages/{语言}.md` §10。
+- **编码实践**：命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全、日志。入口为 `languages/{语言}.md` §1–9。
+- **项目与工程化**：项目结构、配置与环境管理。入口为 `engineering.md`。
+- **版本与协作**：提交（格式见 `git-commit-message.md`、接线见 `engineering.md`）、SemVer、changelog、依赖治理、CI/CD。入口为 `engineering.md`。
 - **与 agent 协作**：思考在先、简单优先、外科式改动、目标驱动、Trae 上下文与工具、沟通交付、设计文档与规则同步。入口为 `ai-collaboration.md`，优先级最高。
 
 具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
@@ -37,10 +34,10 @@
 
 修改 `.trae/rules/` 下的规则时遵循：
 
-- **保持风格一致**：新条目沿用「核心原则 + 要点列表」格式，并按所属领域归类编号。
-- **正确配置生效方式**：通用准则用 `alwaysApply: true`；强绑定文件类型用 `globs`；按场景触发用 `description`；提交内容相关用 `scene: git_message`。控制单文件粒度，规则间不冲突。
+- **保持风格一致**：新条目沿用「核心原则 + 要点列表」格式，并按所属主题归入对应文件。
+- **正确配置生效方式**：通用行为准则用 `alwaysApply: true`（仅 `ai-collaboration.md`）；强绑定文件类型用 `globs`；按场景触发用 `description`；提交内容相关用 `scene: git_message`。控制单文件粒度，规则间不冲突。
+- **保持各文件自洽、跨文件引用不 load-bearing**：内容归属看「使用时机匹配哪种 frontmatter 触发」——写代码时用的（语言特定）进 `languages/`，搭脚手架/治理时用的（跨语言）进 `engineering.md`，写提交时用的进 `git-commit-message.md`；跨文件引用只作软提示，不让某文件依赖另一文件被同时加载。
 - **具体而非泛泛**：给出库名、版本号、命令、配置项；库用 GitHub 链接，标准库用官方文档链接。
-- **增删条目**：跨领域调整时同步更新 `main.md` 顶部领域描述、条目间交叉引用文字（如「见『类型安全与错误处理』」）和指向其他规则文件的相对链接，避免引用失效。
 - **核实时效性**：涉及推荐库、语言/工具版本时，定期核实维护状态并校准版本号（文档中标注「截至 2026-06」的内容，落地时以官方最新稳定版为准）。
 - **控制篇幅**：单个条目聚焦单一主题；要点避免冗余铺垫与重复举例，保留可执行信息。
 
