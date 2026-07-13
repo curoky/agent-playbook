@@ -4,153 +4,117 @@ globs: *.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm
 alwaysApply: false
 ---
 
-# C++ 语言规范（编码实践 + 库选型）
+# C++ 规则
 
-> 本文件自洽：编写 C++ 时所需的编码实践、日志、库选型与工具链均在此。基线为 C++23/20。跨语言版本基线与工程化（结构/配置/CI/发版）可选参考 `engineering.md`（非必需同时加载）。
+## 0. 基线
 
-## 0. 语言版本与语法
+- 基线 C++23/20；优先 RAII、值语义、移动语义，避免手动资源管理。
+- `.bazelrc` 固定 `build --cxxopt=-std=c++23` 或 per-target `copts`；`.bazelversion` 锁 Bazel；`MODULE.bazel` + `MODULE.bazel.lock` 锁依赖。
+- 现代语法优先：智能指针、`auto`、结构化绑定、范围 `for`、`if`/`switch` 初始化、`std::optional`、`std::variant`、`std::expected`、`std::string_view`、`std::span`、`constexpr`/`consteval`、Concepts、Ranges、`fmt`、`<chrono>`；可读性优先。
+- 禁止：裸 `new`/`delete` 或 owning 裸指针、C 风格强转、头文件/全局 `using namespace std;`、宏当常量/函数、裸数组和不安全 C API、未初始化变量、头文件定义非 `inline` 非模板函数/全局变量。
 
-- **现代 C++ 优先**：编写 RAII 风格代码，资源生命周期绑定对象；用值语义与移动语义，避免手动 `new`/`delete`。
-- **版本锁定**：在 `.bazelrc` 固定 `build --cxxopt=-std=c++23`（或 per-target `copts`），并用 `.bazelversion` 锁定 Bazel 版本；通过 `MODULE.bazel` + `MODULE.bazel.lock` 锁定外部依赖。
-- 优先采用现代语法简化代码，例如：
-  - 智能指针 `std::unique_ptr`/`std::shared_ptr` + `std::make_unique`/`std::make_shared`，替代裸 `new`/`delete`（见 §3 的资源管理）。
-  - `auto`、结构化绑定 `auto [a, b] = ...`、范围 `for`、`if`/`switch` 初始化语句，简化样板。
-  - `std::optional`/`std::variant`/`std::expected`（C++23）表达「可能缺失/多态/可失败」，替代裸指针哨兵与错误码。
-  - `std::string_view`/`std::span` 传递只读视图，避免不必要拷贝；`constexpr`/`consteval` 把计算前移到编译期。
-  - Concepts 约束模板（替代 SFINAE）、Ranges（`std::ranges::`、视图与管道 `|`）替代手写循环与迭代器对。
-  - `<format>` 风格的格式化：默认用 [`fmt`](https://github.com/fmtlib/fmt)（`fmt::format`/`fmt::print`），替代 `printf` 与 iostream 拼接；`<chrono>` 处理时间。
-- **新语法以可读性为准绳**：新写法更难懂时（过度模板体操）选直观写法，不为「显得现代」而用。
-- **禁止**：裸 `new`/`delete` 与裸 owning 指针管理资源（用智能指针/容器/RAII）、C 风格强制转换（用 `static_cast`/`reinterpret_cast` 等具名转换）、`using namespace std;` 写在头文件或全局作用域、宏充当常量/函数（用 `constexpr`/`inline` 函数/`enum class`）、裸数组与 `strcpy`/`sprintf` 等不安全 C API（用 `std::array`/`std::vector`/`fmt::format`）、未初始化变量、在头文件定义非 `inline` 的非模板函数/全局变量。
+## 1. 风格与模块
 
-## 1. 命名与代码风格
+- 类型/类 `PascalCase`；函数/变量跟随既有项目（常见 `snake_case` 或 `camelCase`）；常量/`enum class` 枚举值 `PascalCase` 或 `kCamelCase`；宏 `UPPER_SNAKE_CASE`；成员变量统一后缀/前缀；命名空间小写。
+- 布尔用 `is`/`has` 前缀；魔法值提取为 `constexpr` 或 `enum class`。
+- 格式用 `clang-format`。
+- 函数超过一屏、出现阶段性注释、或名称需用 `and` 描述时拆分。
+- 参数超过 3 个用 config struct + 聚合初始化；只读入参用 `const&`/`std::string_view`/`std::span`，转移所有权用值 + `std::move`；避免布尔陷阱参数。
+- 头文件只暴露公共声明；实现细节放 `.cpp`、`detail` 或匿名命名空间；类成员默认 `private`；接口优先 C++20 modules 的 `export`。
+- 依赖倒置用抽象基类/纯虚接口，或模板 + Concepts；由外部注入实现。
 
-- **大小写惯例**：类型/类 `PascalCase`，函数/变量在团队内统一（常见 `snake_case` 或 `camelCase`，跟随既有代码库），常量/`enum class` 枚举值 `PascalCase` 或 `kCamelCase`，宏（应尽量避免）`UPPER_SNAKE_CASE`；成员变量用统一后缀/前缀（如 `member_`）；命名空间小写。
-- **命名即文档**：用完整可检索的名字，布尔加 `is`/`has` 前缀。
-- **避免魔法值**：字面量提取为 `constexpr` 常量与 `enum class`。
-- **格式不进 review**：交给 `clang-format` 自动处理，review 中不讨论格式。
+## 2. 类型、错误、资源
 
-## 2. 函数与模块设计
+- 避免 `void*`、无约束模板、`std::any`；用具体类型、`std::variant`、Concepts。
+- 外部输入显式校验后转强类型领域对象；缓冲区/索引做边界检查。
+- 非法状态用 `enum class`、`std::variant` + `std::visit`、强类型包装裸标量。
+- 可能缺失用 `std::optional<T>`；必然存在用引用或 `gsl::not_null`。
+- 可预期失败用 `std::expected<T, E>`；C++20 用 `tl::expected`；真正不可恢复才 `throw`。
+- 捕获具体异常并按 `const&`；不 `catch(...)` 后吞掉；析构函数 `noexcept` 且不抛。
+- 重抛保因由：`std::nested_exception`/`std::throw_with_nested` 或 error 类型字段。
+- 资源全部由 RAII 管理；优先标准容器、`std::unique_ptr`、`std::shared_ptr`；遵循 Rule of Zero；锁用 `std::lock_guard`/`std::scoped_lock`。
 
-- **单一职责、小而专一**：出现「阶段性注释」、超过一屏、或函数名需用「and」才能描述时 → 拆成更小的具名函数。
-- **参数精简**：参数超过 3 个时用 config struct + 聚合初始化；入参按所有权语义传递（只读用 `const&` 或 `std::string_view`/`std::span`，转移所有权用值 + `std::move`，不滥用裸指针）；避免布尔陷阱参数。
-- **明确公共 API**：头文件只暴露公共声明、实现细节放 `.cpp` 或 `detail`/匿名命名空间、类成员默认 `private`（接口优先 C++20 modules 的 `export`）。
-- **依赖倒置**：用抽象基类/纯虚接口或模板 + Concepts 约束，由外部注入实现。
+## 3. 并发
 
-## 3. 类型安全与错误处理
+- 用 `std::jthread`、线程池、`std::async`/`std::future`；复杂异步用协程或 Asio；避免裸 `std::thread` 后忘记 join/detach。
+- 批量任务提交后汇聚 `future`，或用 `std::execution::par`；并发度用固定线程池或 `std::counting_semaphore`。
+- `future` 必须取结果以传播异常；线程函数内捕获并上报异常。
+- 用 `std::stop_token`/`std::stop_source` 协作式取消。
+- 共享状态用 `std::mutex` + `std::scoped_lock` 或 `std::atomic`；用 TSan/ASan 检测。
+- 性能确认用 `google/benchmark`、`perf`、`valgrind --tool=callgrind`、编译器优化报告；需要时 `reserve()`、移动语义、视图传参、关注缓存局部性。
 
-- **不使用逃逸类型**：避免 `void*` 与无约束模板/`std::any`（用具体类型、`std::variant` 或 Concepts 约束的模板），不用 C 风格转换绕过类型系统。
-- **在边界校验外部输入**：显式校验后转为强类型领域对象、对缓冲区/索引做边界检查。
-- **让非法状态不可表示**：用 `enum class`、`std::variant` + `std::visit` 建模互斥状态，强类型包装裸标量（避免 `int`/`bool` 满天飞）。
-- **避免「可能不存在」的隐式约定**：用 `std::optional<T>` 表达「可能缺失」，引用/`gsl::not_null` 表达「必然存在」，避免裸指针兼作哨兵。
-- **错误分流判据：可预期错误用值表达**：用 `std::expected<T, E>`（C++23；C++20 用 `tl::expected`）表达可失败结果，而非裸异常或整型错误码；**真正不可恢复**才 `throw`。
-- **捕获即处理**：按 `const&` 捕获具体类型、不 `catch(...)` 后吞掉，析构函数不抛异常（标记 `noexcept`）。
-- **重抛保根因**：用 `std::nested_exception`/`std::throw_with_nested` 或在 error 类型中携带因由。
-- **资源用 RAII 管理**：所有资源（内存、文件、锁、句柄）由对象生命周期管理——优先标准容器与智能指针（`std::unique_ptr` 独占、`std::shared_ptr` 共享），遵循「Rule of Zero」；用 `std::lock_guard`/`std::scoped_lock` 管锁，不裸 `new`/`delete`、不手动 `lock`/`unlock`、不裸 `fopen`/`malloc`。
+## 4. 注释与测试
 
-## 4. 异步与并发
+- 注释写意图、约束、权衡、坑；不复述代码。公共头文件用 Doxygen 风格注释，说明前置/后置条件和所有权语义。
+- 改代码同步改注释；删死代码；`TODO`/`FIXME`/`HACK` 附负责人或 issue。
+- 测试用 `Catch2`，经 `bazel test //...` 运行；用 `GENERATE`/`SECTION` 覆盖多组用例。
+- 测公共行为和边界，不测私有实现；mock 用 `trompeloeil` 或接口/模板 fake。
+- 测试在 ASan/UBSan/TSan 下运行；修 bug 先写复现用例。
 
-- **统一并发模型**：用 `std::jthread`（自动 join、支持 `stop_token`）或线程池、`std::async`/`std::future`，复杂异步用协程（C++20 `co_await`）或 `Asio`，不裸 `std::thread` 后忘记 join/detach。
-- **并发要并行**：用线程池/`std::async` 批量提交后汇聚 `future`，或并行算法 `std::execution::par`。
-- **限制并发度**：用固定大小线程池或 `std::counting_semaphore`。
-- **生命周期闭环**：确保 `future` 被取走以传播异常、线程函数内捕获并上报异常；用 `std::stop_token`/`std::stop_source`（配合 `std::jthread`）协作式取消。
-- **保护共享状态**：用 `std::mutex` + `std::scoped_lock` 或 `std::atomic`，避免数据竞争，并用 TSan/ASan 检测。
+## 5. 安全与日志
 
-## 5. 性能与优化
+- SQL 用 prepared statement 绑定参数；禁止拼接 SQL。
+- 子进程用 `posix_spawn` 或参数数组；禁止 `system()`。
+- 随机数用 `libsodium` 或操作系统 CSPRNG；不用 `std::rand`。
+- 内存安全：用边界安全容器、`std::span`、`at()`；避免裸指针运算和 `strcpy`/`sprintf`/`gets`；CI 跑 ASan/UBSan 与 `clang-tidy` 的 `cppcoreguidelines`/`bugprone`。
+- 日志用 `spdlog`（基于 `fmt`）；`std::cout` 只作临时调试，提交前清理。
+- 级别：`debug`/`info`/`warn`/`error`；生产默认 `info`。日志带请求 ID、用户 ID、模块名等字段。
+- 热路径避免高频 `info`；错误日志带因由；禁止记录口令、令牌、隐私数据。
 
-- **先测后调**：用 `google/benchmark` 写微基准；用 `perf`/`valgrind --tool=callgrind`/编译器优化报告定位热点，不靠直觉过早优化。
-- **避免常见浪费**：`reserve()` 预分配容器、用移动语义避免拷贝、按 `const&`/`string_view`/`span` 传只读视图、注意缓存局部性。
+## 6. 库选型
 
-## 6. 注释与文档
+- 标准库够用时不引第三方；库须支持 C++20/23，并能通过 Bazel/bzlmod 引入。
+- 选现代、主流、积极维护的库；不确定时核实发布时间与活跃度。
+- 高风险依赖（久未维护、star 少、小众）先说明维护/安全/替代风险并确认。
+- `folly`/`wangle`、Boost、abseil 只引实际用到的子库；与标准库重叠功能优先标准库。
+- 引入依赖走 `MODULE.bazel` 的 `bazel_dep`，提交 `MODULE.bazel.lock`；避免手动 vendoring。
 
-- **写 why 不写 what**：注释解释意图、权衡、坑与非显而易见的约束，不复述代码字面逻辑。
-- **同步与清理**：改代码同步更新注释；删死代码；`TODO`/`FIXME`/`HACK` 必须附负责人或 issue 链接。
-- **公共 API 文档**：在头文件用 Doxygen 风格注释（`@brief`/`@param`/`@return`，说明前置/后置条件与所有权语义）。
-
-## 7. 测试规范
-
-- **框架**：用 `Catch2`，经 `bazel test //...` 统一运行；用 `GENERATE`/`SECTION` 覆盖多组用例与分支。
-- **测行为非实现**：针对公共接口与可观察行为断言，不断言私有细节。
-- **隔离与确定性**：用 `trompeloeil` 或对接口/模板做 fake；测试在 ASan/UBSan/TSan 下运行。
-- **覆盖优先级**：先覆盖核心逻辑、分支与边界，覆盖率作参考非目标；修 bug 先写能复现的失败用例再修。
-
-## 8. 安全编码
-
-- **杜绝注入**：用预处理语句 `prepared statement` 绑定参数，禁止拼接 SQL；用 `posix_spawn`/参数数组而非 `system()`。
-- **安全使用加密**：随机数用 `libsodium` 或操作系统 CSPRNG，不用 `std::rand`。
-- **C++ 内存安全**：杜绝缓冲区溢出、越界访问、悬垂指针/引用、use-after-free、整型溢出——优先用边界安全的容器与 `std::span`/`at()`，避免裸指针运算与不安全 C API（`strcpy`/`sprintf`/`gets`）；CI 用 ASan/UBSan 与 `clang-tidy` 的 `cppcoreguidelines`/`bugprone` 检查兜底。
-
-## 9. 日志
-
-- **用结构化日志库**：用 `spdlog`（基于 `fmt`）；禁止 `std::cout` 做正式日志（仅临时调试可用，提交前清理）。
-- **日志级别约定**：`debug`（开发细节）/`info`（关键流程节点）/`warn`（可恢复异常）/`error`（失败需关注）；生产默认 `info`。
-- **结构化字段**：带上下文字段（请求 ID、用户 ID、模块名），不靠字符串拼接。
-- **不在热路径滥打**：避免在循环/高频调用里打 `info`，防止刷屏与性能损耗。
-- **错误日志带上下文**：记录错误时带上因由（配合 §3「重抛保根因」）。
-- **不记敏感信息**：日志不输出口令、令牌、个人隐私数据。
-
-## 10. 库选型
-
-**选型元原则**（标准库优先、现代化、主流、积极维护）：
-
-- **标准库够用时不引第三方**；引入的库须支持 C++20/23、提供 Bazel 模块或可被 bzlmod 引入。
-- **选型标准**：满足现代化、主流（社区广泛采用、生产验证充分）、积极维护；不确定就核实最新发布时间与活跃度。
-- **谨慎引入高风险依赖**：久未维护、star 偏少、过于小众的组件，除非用户指定否则不主动引入；确需引入时先说明维护、安全、可替代性风险并请用户确认。
-- **不因体积/依赖复杂度而拒绝**：满足选型标准且能显著提升可读性与可维护性时，不把体积作为否决项；这些因素只影响多个合格候选之间的选择（如 `folly` 体量大，仅在确需其能力时引入）。
-- **引入务必走 Bazel**（`MODULE.bazel` 声明 `bazel_dep`、`MODULE.bazel.lock` 锁版本），避免手动 vendoring。
-
-### 速查表
-
-| 场景 | 推荐库 | 引入要求 | 说明 |
-| --- | --- | --- | --- |
-| 包管理 / 构建 | [`Bazel`](https://bazel.build/)（bzlmod） | 必须 | 用 `MODULE.bazel` 声明 `bazel_dep` 引入依赖，依赖优先取自 [Bazel Central Registry](https://registry.bazel.build/)；提交 `MODULE.bazel.lock` 锁版本，未收录的库用 `git_override`/`http_archive`。 |
-| 单元测试 | [`Catch2`](https://github.com/catchorg/Catch2) | 必须 | header-only、零配置、BDD 风格；通过 `bazel test //...` 运行。需 mock 时配 [`trompeloeil`](https://github.com/rollbear/trompeloeil)。 |
-| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 按需 | 微基准测试，配合性能优化。 |
-| 格式化 / 输出 | [`fmt`](https://github.com/fmtlib/fmt) | 必须 | 默认用 `fmt::format`/`fmt::print`；特性全、跨编译器一致，`std::format` 本即源自 `fmt`。 |
-| 日志 | [`spdlog`](https://github.com/gabime/spdlog) | 必须 | 快速、结构化、基于 `fmt`；替代手写 iostream 日志。 |
-| JSON | [`nlohmann/json`](https://github.com/nlohmann/json) / [`glaze`](https://github.com/stephenberry/glaze) | 必须 | 易用优先用 `nlohmann/json`；极致性能/反射式序列化用 `glaze`。 |
-| HTTP 客户端 | [`cpr`](https://github.com/libcpr/cpr) | 必须 | 基于 libcurl 的现代封装，API 友好。 |
-| HTTP / 网络服务 | [`Boost.Asio`](https://github.com/boostorg/asio) / [`Drogon`](https://github.com/drogonframework/drogon) | 必须 | 底层异步 I/O 用 `Asio`；需完整 Web 框架用 `Drogon`。 |
-| 命令行解析 | [`CLI11`](https://github.com/CLIUtils/CLI11) | 必须 | header-only，类型安全，子命令支持好。 |
-| 配置文件 | [`toml++`](https://github.com/marzer/tomlplusplus) / [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) | 按需 | TOML 用 `toml++`，YAML 用 `yaml-cpp`，JSON 配置复用 `nlohmann/json`。 |
-| 错误处理 | 标准库 `std::expected`（C++23）/ [`tl::expected`](https://github.com/TartanLlama/expected) | 标准库 | C++23 用标准库；C++20 退回 header-only 的 `tl::expected`。 |
-| 通用工具 / 缺失补全 | [`abseil`](https://github.com/abseil/abseil-cpp)（absl） | 按需 | 容器（`flat_hash_map` 等）、字符串、时间、同步等增强；与标准库重叠部分优先标准库。Google 系库（gRPC 等）的共同基础。 |
-| 高性能基础库 | [`folly`](https://github.com/facebook/folly) | 按需 | Facebook 的核心 C++ 库：高性能容器、字符串、`Future`/`coro`、并发原语等；体量大、依赖重，仅在确需其能力（高并发服务端）时引入。 |
-| 异步网络框架 | [`wangle`](https://github.com/facebook/wangle) | 按需 | 基于 `folly` 的 C++ 网络应用框架（pipeline/服务端骨架），构建高性能 RPC/服务端时用；依赖 `folly`。 |
-| RPC（Thrift） | [`fbthrift`](https://github.com/facebook/fbthrift) | 按需 | Facebook 的 Thrift 实现，支持 Thrift IDL、异步与流式；依赖 `folly`/`wangle`，适合既有 Thrift 生态。 |
-| RPC（gRPC） | [`grpc`](https://github.com/grpc/grpc) | 必须 | 跨语言 RPC 事实标准，配 Protocol Buffers；新建跨语言服务默认选它，依赖 `absl`/`protobuf`。 |
-| 数据库 / SQL | [`sqlite_orm`](https://github.com/fnc12/sqlite_orm) / [`SQLiteCpp`](https://github.com/SRombauts/SQLiteCpp) | 必须 | SQLite 嵌入式；服务端 DB 用厂商官方 C++ 驱动。 |
-| 加密 / 哈希 | [`libsodium`](https://github.com/jedisct1/libsodium) / OpenSSL | 必须 | 通用加密优先 `libsodium`（API 不易误用）；需 TLS/兼容生态用 OpenSSL。 |
-| 协程 / 异步 | 标准库 `<coroutine>` + [`cppcoro`](https://github.com/lewissbaker/cppcoro) | 按需 | C++20 协程基础设施仍薄，复杂异步可借 `cppcoro` 或 `Asio` 协程支持。 |
-| 反射 / 序列化（高性能） | [`glaze`](https://github.com/stephenberry/glaze) | 按需 | 编译期反射式 JSON/结构体序列化。 |
-| 数值 / 线性代数 | [`Eigen`](https://gitlab.com/libeigen/eigen) | 按需 | header-only 矩阵/线代库。 |
-| 进程间 / 协程调度 | [`Boost`](https://github.com/boostorg/boost) | 按需 | 标准库缺口的成熟补充；只引用到的子库，不整包依赖。 |
-
-### 选型判据（多候选时如何选）
-
-- **测试 mock**：`Catch2` 为默认测试框架（header-only、零配置、BDD 风格，`bazel test` 直接跑）；需要 mock 时配 `trompeloeil`（与 Catch2 配合好），不必为 mock 切到其他框架。
-- **格式化 `fmt` vs 标准库 `<format>`**：默认用 `fmt`，特性最全、跨编译器行为一致、含彩色输出与编译期检查；标准库 `std::format`/`std::print` 本就源自 `fmt`，仅在追求零依赖且目标编译器已完整支持时才考虑退回标准库。
-- **JSON `nlohmann/json` vs `glaze`**：默认 `nlohmann/json`（API 直观、文档全、生态广），**易用性优先**；当 **JSON 解析/序列化是性能热点**、且结构体已知时用 `glaze`（编译期反射、零拷贝、快一个量级）。
-- **错误处理 `std::expected` vs 异常 vs 错误码**：库的可预期失败（解析、查找、校验）优先 `std::expected<T, E>`（C++23；C++20 用 `tl::expected`），让调用方在类型上必须处理；**真正异常、不可恢复**才 `throw`；避免裸错误码（`int` 返回 + out 参数）这类易忽略的 C 风格。
-- **网络 `Boost.Asio` vs `Drogon` vs `cpr`**：只做**HTTP 客户端请求**用 `cpr`（最简单）；需要**底层 TCP/UDP、自定义协议、协程异步**用 `Asio`；需要**完整 HTTP 服务端框架（路由、ORM、模板）**用 `Drogon`。
-- **加密 `libsodium` vs OpenSSL**：新代码优先 `libsodium`（API 简洁、默认安全、难以误用）；必须做 **TLS、X.509、或对接既有 OpenSSL 生态**时用 OpenSSL，不自行实现加密原语。
-- **RPC `grpc` vs `fbthrift`**：新建**跨语言**服务默认 `grpc`（生态最广、配 protobuf、社区与工具链成熟）；仅在**对接既有 Thrift/Facebook 生态**或需 fbthrift 特有能力（与 `folly`/`wangle` 深度整合的异步/流式）时用 `fbthrift`，并接受其 `folly`/`wangle` 重依赖。
-- **是否引入 `folly`/`wangle` 与 `Boost`/`abseil`**：仅当标准库确有缺口时引入，且**只依赖用到的子库**，不整包拉入；与标准库重叠的功能（智能指针、`optional`、`filesystem`）一律用标准库。`folly`/`wangle` 体量大、编译重、依赖链长，仅在**高并发服务端确需其性能/能力**时引入，普通项目优先 `abseil` 或标准库。
-
-> 注：截至 2026-06 的默认推荐；既有项目沿用等价成熟方案，并定期复核维护状态。
-
-## 11. 工具链
-
-> 跨语言工具链约定（配置/锁文件入库、本地/pre-commit/CI 一致）可选参考 `engineering.md` 工具链节。
-
-| 用途 | 工具 | 说明 |
+| 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| 构建系统 | [`Bazel`](https://bazel.build/)（启用 bzlmod） | 用 `BUILD.bazel` 声明 target，`.bazelversion` 固定版本；`.bazelrc` 固定 `build --cxxopt=-std=c++23`。 |
-| 依赖管理 | Bazel bzlmod + [Bazel Central Registry](https://registry.bazel.build/) | `MODULE.bazel` 声明 `bazel_dep`，`MODULE.bazel.lock` 锁版本并入库；BCR 未收录的库用 `git_override`/`http_archive`。 |
-| 格式化 | [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html) | `.clang-format` 入库；格式不入 review 讨论。 |
-| 静态分析 / Lint | [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/) | `.clang-tidy` 入库，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines` 等；CI 强制。 |
-| 编译期检查 | 编译器 warning | 在 `.bazelrc` 配 `build --cxxopt=-Wall --cxxopt=-Wextra --cxxopt=-Wpedantic` 并视情况 `-Werror`（MSVC 用 `/W4 /WX`）。 |
-| 运行期检查 | Sanitizers | 用 `--config=asan`/`--config=ubsan`（`.bazelrc` 预置）跑 ASan/UBSan、必要时 TSan；定位内存与未定义行为。 |
-| 测试 + 覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2) | 通过 `bazel test //...` 统一运行；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
-| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 微基准，配合性能优化。 |
+| 构建/包管理 | [`Bazel`](https://bazel.build/) bzlmod | 必须；优先 Bazel Central Registry，未收录用 `git_override`/`http_archive`。 |
+| 单元测试 | [`Catch2`](https://github.com/catchorg/Catch2) | 必须；mock 配 [`trompeloeil`](https://github.com/rollbear/trompeloeil)。 |
+| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 按需。 |
+| 格式化/输出 | [`fmt`](https://github.com/fmtlib/fmt) | 必须；默认 `fmt::format`/`fmt::print`。 |
+| 日志 | [`spdlog`](https://github.com/gabime/spdlog) | 必须；基于 `fmt`。 |
+| JSON | [`nlohmann/json`](https://github.com/nlohmann/json) / [`glaze`](https://github.com/stephenberry/glaze) | 默认 `nlohmann/json`；性能热点且结构体已知用 `glaze`。 |
+| HTTP 客户端 | [`cpr`](https://github.com/libcpr/cpr) | 必须；基于 libcurl。 |
+| HTTP/网络服务 | [`Boost.Asio`](https://github.com/boostorg/asio) / [`Drogon`](https://github.com/drogonframework/drogon) | 底层 TCP/UDP/协程异步用 Asio；完整 Web 框架用 Drogon。 |
+| CLI | [`CLI11`](https://github.com/CLIUtils/CLI11) | 必须。 |
+| 配置 | [`toml++`](https://github.com/marzer/tomlplusplus) / [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) | TOML/YAML；JSON 配置复用 `nlohmann/json`。 |
+| 错误结果 | `std::expected` / [`tl::expected`](https://github.com/TartanLlama/expected) | C++23 用标准库；C++20 用 `tl::expected`。 |
+| 通用补全 | [`abseil`](https://github.com/abseil/abseil-cpp) | 按需；标准库缺口时用。 |
+| 高性能基础库 | [`folly`](https://github.com/facebook/folly) | 按需；高并发服务端确需其能力时用。 |
+| 异步网络框架 | [`wangle`](https://github.com/facebook/wangle) | 按需；依赖 `folly`。 |
+| Thrift RPC | [`fbthrift`](https://github.com/facebook/fbthrift) | 按需；既有 Thrift/Facebook 生态。 |
+| gRPC | [`grpc`](https://github.com/grpc/grpc) | 必须；新建跨语言服务默认。 |
+| SQLite | [`sqlite_orm`](https://github.com/fnc12/sqlite_orm) / [`SQLiteCpp`](https://github.com/SRombauts/SQLiteCpp) | 嵌入式 SQLite；服务端 DB 用厂商官方驱动。 |
+| 加密 | [`libsodium`](https://github.com/jedisct1/libsodium) / OpenSSL | 新代码优先 `libsodium`；TLS/X.509/既有 OpenSSL 生态用 OpenSSL。 |
+| 协程补全 | 标准库 `<coroutine>` + [`cppcoro`](https://github.com/lewissbaker/cppcoro) | 复杂异步可用 `cppcoro` 或 Asio 协程。 |
+| 数值/线代 | [`Eigen`](https://gitlab.com/libeigen/eigen) | 按需。 |
+| Boost | [`Boost`](https://github.com/boostorg/boost) | 按需；只依赖用到的子库。 |
 
-- **提交前检查（pre-commit）**：用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理 git hook，在 `lefthook.yml` 的 `pre-commit` 中对暂存文件跑 `clang-format --dry-run -Werror`（或格式校验）与 `clang-tidy`；`bazel build`/`bazel test //...` 在 CI 执行。
+## 7. 多候选判据
+
+- `Catch2` + `trompeloeil`: 默认测试/mock 组合；不为 mock 切测试框架。
+- `fmt` vs `<format>`: 默认 `fmt`；目标编译器完整支持且追求零依赖时才退回标准库。
+- `nlohmann/json` vs `glaze`: 默认 `nlohmann/json`；解析/序列化是热点且结构体已知时用 `glaze`。
+- `std::expected` vs 异常 vs 错误码: 可预期失败用 `expected`；不可恢复才异常；避免 `int` 返回 + out 参数。
+- `Boost.Asio` vs `Drogon` vs `cpr`: 客户端请求用 `cpr`；底层协议/协程异步用 Asio；完整 HTTP 服务端用 Drogon。
+- `libsodium` vs OpenSSL: 新代码优先 `libsodium`；TLS、X.509、OpenSSL 生态对接用 OpenSSL；不自行实现加密原语。
+- `grpc` vs `fbthrift`: 新建跨语言服务默认 `grpc`；既有 Thrift/Facebook 生态或 fbthrift 特有异步/流式能力才用 `fbthrift`。
+- `folly/wangle`、Boost、abseil: 标准库有能力时不用；普通项目优先标准库或 abseil，只有高并发服务端确需时用 `folly/wangle`。
+
+## 8. 工具链
+
+| 用途 | 工具 |
+| --- | --- |
+| 构建 | [`Bazel`](https://bazel.build/) bzlmod；`BUILD.bazel` 声明 target，`.bazelversion` 固定版本，`.bazelrc` 固定 C++ 标准。 |
+| 依赖 | `MODULE.bazel` + `MODULE.bazel.lock`；BCR 优先，未收录用 `git_override`/`http_archive`。 |
+| 格式化 | [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html)，提交 `.clang-format`。 |
+| 静态分析 | [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/)，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines`。 |
+| 编译警告 | `.bazelrc` 配 `-Wall -Wextra -Wpedantic`，按需 `-Werror`；MSVC 用 `/W4 /WX`。 |
+| Sanitizers | `.bazelrc` 预置 `--config=asan`/`--config=ubsan`，必要时 TSan。 |
+| 测试/覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2)，`bazel test //...`；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
+| 基准 | [`google/benchmark`](https://github.com/google/benchmark)。 |
+
+- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook)：对暂存 C++ 文件跑 `clang-format --dry-run -Werror` 或格式校验、`clang-tidy`；CI 跑 `bazel build`/`bazel test //...`。

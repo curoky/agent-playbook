@@ -11,7 +11,7 @@
 | 文件 | 生效方式 | 内容 |
 | --- | --- | --- |
 | [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`，唯一常驻） | 与 agent 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
-| [`languages/{js,python,go,cpp,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 各语言的**编码实践 + 日志 + 库选型 + 工具链**：版本锁定与语法（§0）、各主题该语言的具体做法与跨语言判据（§1–8）、日志（§9，bash 为 §9）、分场景库选型表与选型判据（§10，bash 无）、工具链与 pre-commit（§11，bash 为 §10） |
+| [`languages/{js,python,go,cpp,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 面向 agent 的语言决策清单：基线、风格与模块、类型/错误/资源、并发、注释与测试、安全与日志、库选型（JS/Python/Go/C++）、工具链与 pre-commit；Bash 另含使用边界、文本处理与 Shell 安全红线 |
 | [`engineering.md`](./.trae/rules/engineering.md) | 智能生效（`description`） | 工程化 9 节：项目结构、配置与环境、统一工具链（跨语言约束 + 对照表）、语言与工具版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD |
 | [`documentation.md`](./.trae/rules/documentation.md) | 指定文件生效（`globs`：Markdown 等文档） | 编写文档的可读性与表达克制规范 |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的完整格式规范 |
@@ -20,21 +20,21 @@
 
 ## 产物结构导览
 
-规范按五个领域组织（供人阅读的地图；**文件不与领域一一对应**，同一领域可能分布在多个自洽文件中），条目统一为「**核心原则** + 要点列表」：
+规范按五个领域组织（供人阅读的地图；**文件不与领域一一对应**，同一领域可能分布在多个自洽文件中），规则正文优先写成给 agent 执行的短决策清单：
 
-- **技术栈与工具基线**：开源组件选型、现代语言版本与语法、统一工具链。语法/版本锁定见 `languages/{语言}.md` §0，版本基线总表与跨语言工具链约定见 `engineering.md`，库选型见 `languages/{语言}.md` §10。
-- **编码实践**：命名、函数与模块、类型安全与错误、异步、性能、注释、测试、安全、日志。入口为 `languages/{语言}.md` §1–9。
+- **技术栈与工具基线**：开源组件选型、现代语言版本与语法、统一工具链。语法/版本锁定见 `languages/{语言}.md` 的「基线」，版本基线总表与跨语言工具链约定见 `engineering.md`，库选型见各语言规则的「库选型 / 多候选判据」。
+- **编码实践**：命名、函数与模块、类型安全与错误、异步/并发、注释、测试、安全、日志。入口为 `languages/{语言}.md`。
 - **项目与工程化**：项目结构、配置与环境管理。入口为 `engineering.md`。
 - **版本与协作**：提交（格式见 `git-commit-message.md`、接线见 `engineering.md`）、SemVer、changelog、依赖治理、CI/CD。入口为 `engineering.md`。
 - **与 agent 协作**：思考在先、简单优先、外科式改动、目标驱动、Trae 上下文与工具、沟通交付、设计文档与规则同步。入口为 `ai-collaboration.md`，优先级最高。
 
-具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go** 与 **C++** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
+具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go**、**C++** 与 **Bash/Shell** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
 
 ## 迭代与维护原则
 
 修改 `.trae/rules/` 下的规则时遵循：
 
-- **保持风格一致**：新条目沿用「核心原则 + 要点列表」格式，并按所属主题归入对应文件。
+- **保持风格一致**：规则正文面向 agent，优先保留可执行约束、版本/工具/库名、禁止项和判据；少写解释性铺垫。
 - **正确配置生效方式**：通用行为准则用 `alwaysApply: true`（仅 `ai-collaboration.md`）；强绑定文件类型用 `globs`；按场景触发用 `description`；提交内容相关用 `scene: git_message`。控制单文件粒度，规则间不冲突。
 - **保持各文件自洽、跨文件引用不 load-bearing**：内容归属看「使用时机匹配哪种 frontmatter 触发」——写代码时用的（语言特定）进 `languages/`，搭脚手架/治理时用的（跨语言）进 `engineering.md`，写提交时用的进 `git-commit-message.md`；跨文件引用只作软提示，不让某文件依赖另一文件被同时加载。
 - **具体而非泛泛**：给出库名、版本号、命令、配置项；库用 GitHub 链接，标准库用官方文档链接。
