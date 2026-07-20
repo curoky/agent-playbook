@@ -9,8 +9,8 @@ mkdir -p $HOME/.trae-cn/skills
 
 rsync -a --delete $SCRIPT_DIR/.trae/rules/ $HOME/.trae/user_rules/
 rsync -a --delete $SCRIPT_DIR/.trae/skills/ $HOME/.trae/skills/
-rsync -a --delete $SCRIPT_DIR/.trae-cn/rules/ $HOME/.trae-cn/user_rules/
-rsync -a --delete $SCRIPT_DIR/.trae-cn/skills/ $HOME/.trae-cn/skills/
+rsync -a --delete $SCRIPT_DIR/.trae/rules/ $HOME/.trae-cn/user_rules/
+rsync -a --delete $SCRIPT_DIR/.trae/skills/ $HOME/.trae-cn/skills/
 
 rm -rf $HOME/.trae/rules
 rm -rf $HOME/.trae-cn/rules
