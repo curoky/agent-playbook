@@ -45,6 +45,7 @@ alwaysApply: false
 | Python | `uv` | `ruff` | `mypy` / `pyright` | `pytest` |
 | Go | `go mod` | `gofmt`/`goimports` + `golangci-lint` | `go vet` / `staticcheck` | `go test -race` |
 | C++ | Bazel(bzlmod) | `clang-format` | `clang-tidy` | `Catch2` |
+| Swift | SwiftPM | `swift-format`/`SwiftFormat` + `SwiftLint` | `swift build`（编译期类型/并发检查） | `swift-testing` |
 | Bash | —（系统） | `shfmt` | `shellcheck` | `bats` |
 
 ## 4. 语言与工具版本基线
@@ -61,6 +62,7 @@ alwaysApply: false
 | Go | 1.25（官方支持最新两个大版本） | 1.26.x |
 | C++ 标准 | C++20 | C++23 |
 | C++ 编译器 | GCC 12 / Clang 15 / MSVC 19.3x | 最新稳定版（GCC 14+ / Clang 18+） |
+| Swift | 6.2（Swift 6 language mode，macOS 26+ / Xcode 26） | 6.2.x（strict concurrency `complete` + Approachable Concurrency） |
 | Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
 | Bash | 4.4 | 5.x（`#!/usr/bin/env bash` + `set -euo pipefail`） |
 

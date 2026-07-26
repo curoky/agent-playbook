@@ -11,7 +11,7 @@
 | 文件 | 生效方式 | 内容 |
 | --- | --- | --- |
 | [`ai-collaboration.md`](./.trae/rules/ai-collaboration.md) | 始终生效（`alwaysApply: true`，唯一常驻） | 与 agent 协作的行为准则（优先级最高），含 Trae 上下文/工具使用约定 |
-| [`languages/{js,python,go,cpp,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 面向 agent 的语言决策清单：基线、风格与模块、类型/错误/资源、并发、注释与测试、安全与日志、库选型（JS/Python/Go/C++）、工具链与 pre-commit；Bash 另含使用边界、文本处理与 Shell 安全红线 |
+| [`languages/{js,python,go,cpp,swift,bash}.md`](./.trae/rules/languages/) | 各自指定文件生效（`globs`：对应语言）+ 智能生效（`description`） | 面向 agent 的语言决策清单：基线、风格与模块、类型/错误/资源、并发、注释与测试、安全与日志、库选型（JS/Python/Go/C++/Swift）、工具链与 pre-commit；Bash 另含使用边界、文本处理与 Shell 安全红线 |
 | [`engineering.md`](./.trae/rules/engineering.md) | 智能生效（`description`） | 工程化 9 节：项目结构、配置与环境、统一工具链（跨语言约束 + 对照表）、语言与工具版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD |
 | [`documentation.md`](./.trae/rules/documentation.md) | 指定文件生效（`globs`：Markdown 等文档） | 编写文档的可读性与表达克制规范 |
 | [`git-commit-message.md`](./.trae/rules/git-commit-message.md) | 提交场景生效（`scene: git_message`） | Trae 生成 Git Commit Message 时遵循的完整格式规范 |
@@ -28,7 +28,7 @@
 - **版本与协作**：提交（格式见 `git-commit-message.md`、接线见 `engineering.md`）、SemVer、changelog、依赖治理、CI/CD。入口为 `engineering.md`。
 - **与 agent 协作**：思考在先、简单优先、外科式改动、目标驱动、Trae 上下文与工具、沟通交付、设计文档与规则同步。入口为 `ai-collaboration.md`，优先级最高。
 
-具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go**、**C++** 与 **Bash/Shell** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
+具体技术栈以 **JavaScript/TypeScript**、**Python**、**Go**、**C++**、**Swift** 与 **Bash/Shell** 为准；其他语言沿用语言无关原则，并套用对应生态的等价工具。
 
 ## 迭代与维护原则
 
