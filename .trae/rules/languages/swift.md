@@ -1,6 +1,6 @@
 ---
 description: 编写 Swift 代码，或为 Swift 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.swift
+globs: *.swift,.swift-version,Package.resolved
 alwaysApply: false
 ---
 
@@ -8,9 +8,10 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 只支持 macOS 26+（Xcode 26 / Swift 6.2）；直接用最新特性，不做向后兼容与 `#available` 版本判断，不写 back-deployment 兜底。
-- 基线 Swift 6.2；启用 Swift 6 language mode，strict concurrency 设为 `complete`，把数据竞争拦在编译期；开启 opt-in strict memory safety 标记不安全构造。
-- 用 Swift Package Manager；`Package.swift` 声明 `swift-tools-version:6.2`、`platforms: [.macOS(.v26)]`，提交 `Package.resolved` 锁依赖。
+- 新项目使用官方最新稳定 Swift（截至 2026-07 为 6.3.2），不默认使用 development snapshot；用 `.swift-version` / Swiftly 或 Xcode toolchain 选择锁定具体版本。
+- 启用 Swift 6 language mode，strict concurrency 设为 `complete`，把数据竞争拦在编译期；开启 opt-in strict memory safety 标记不安全构造。
+- 用 Swift Package Manager；`Package.swift` 声明 `swift-tools-version:6.3`。仅按实际目标声明 Apple / Linux / Windows / Wasm / Android 平台约束，不把通用 Swift package 强制限定为 macOS。
+- leaf app / executable 提交 `Package.resolved` 保证部署可复现；library 可为自身 CI 提交，但明确它不会锁定下游消费者的依赖解析。
 - 值语义优先：`struct`/`enum` 优先于 `class`，默认 `let` 而非 `var`；现代语法优先：`async`/`await`、`actor`、结构化并发、`guard let`/`if let` 简写解包、`some`/`any`、`Result`、typed `throws`、`Codable`、Regex 字面量、result builder、尾随闭包；性能敏感路径用 `InlineArray`（`[N of T]`）与 `Span`/`RawSpan`；可读性优先。
 - 禁止：强制解包 `!` 与隐式解包可选（测试/明确不变量除外）、`as!` 强制转型、`try!`（测试除外）、用 `fatalError`/`preconditionFailure` 处理可预期错误、无理由的 `@unchecked Sendable`、保留循环引用（用 `weak`/`unowned`）。
 
@@ -36,7 +37,7 @@ alwaysApply: false
 
 ## 3. 并发
 
-- 用 Swift 6.2 Approachable Concurrency（SPM 无单一开关，需在 target `swiftSettings` 显式接线）：
+- 用 Swift 6.3 Approachable Concurrency（SPM 无单一开关，需在 target `swiftSettings` 显式接线）：
   - UI/可执行 target 配 `.defaultIsolation(MainActor.self)`，默认单线程主 actor 隔离，减少 `@MainActor` 标注；这是独立旋钮，与下面的 upcoming feature 分开。
   - 已用 `swiftLanguageModes: [.v6]` 时，再开两个 6.2 新特性：`.enableUpcomingFeature("NonisolatedNonsendingByDefault")`（SE-0461，`nonisolated async` 继承调用方上下文）与 `.enableUpcomingFeature("InferIsolatedConformances")`（SE-0470）；另外 3 个 flag 已随 v6 语言模式默认开启。
 - 需要真正并行、脱离当前 actor 到并发线程池的部分，显式标 `@concurrent`；否则 `async` 默认留在调用方上下文，避免无谓的 actor 跳变。
@@ -74,7 +75,7 @@ alwaysApply: false
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| 包管理/构建 | [`SwiftPM`](https://www.swift.org/package-manager/) | 必须；`Package.swift` + `Package.resolved`；大型多 target/多模块工程按需配 [`Tuist`](https://github.com/tuist/tuist)。 |
+| 包管理/构建 | [`SwiftPM`](https://www.swift.org/package-manager/) | 必须；`Package.swift` 声明真实目标平台，leaf 项目提交 `Package.resolved`；大型多 target/多模块 Apple 工程按需配 [`Tuist`](https://github.com/tuist/tuist)。 |
 | CLI 参数 | [`swift-argument-parser`](https://github.com/apple/swift-argument-parser) | 必须。 |
 | 日志 | [`swift-log`](https://github.com/apple/swift-log) | 必须；结构化 `Logger`。 |
 | JSON | 标准库 [`Codable`](https://developer.apple.com/documentation/swift/codable) | 必须；`JSONEncoder`/`JSONDecoder`。 |
@@ -92,7 +93,7 @@ alwaysApply: false
 | 异步序列 | [`swift-async-algorithms`](https://github.com/apple/swift-async-algorithms) | 按需；`AsyncSequence` 补充。 |
 | 依赖注入 | 手动注入 / [`swift-dependencies`](https://github.com/pointfreeco/swift-dependencies) | 小中型手动；需统一注册/覆盖用 `swift-dependencies`。 |
 | Redis | [`RediStack`](https://github.com/swift-server/RediStack) | 按需。 |
-| gRPC | [`grpc-swift`](https://github.com/grpc/grpc-swift) | 必须；跨语言服务。 |
+| gRPC | [`grpc-swift-2`](https://github.com/grpc/grpc-swift-2) | 必须；新项目用当前 v2；`grpc-swift` v1 仅存量维护。 |
 | macOS 端 UI | [`SwiftUI`](https://developer.apple.com/documentation/swiftui) + [`Observation`](https://developer.apple.com/documentation/observation) | 新界面默认；状态用 `@Observable` 宏（配 `@State`/`@Bindable`），不用 `ObservableObject`；需要 SwiftUI 未覆盖的能力时下沉 AppKit。 |
 | 测试 | [`swift-testing`](https://github.com/swiftlang/swift-testing) | 必须；XCTest 用于存量与专有能力。 |
 | Lint | [`SwiftLint`](https://github.com/realm/SwiftLint) | 必须；配置 `.swiftlint.yml`。 |
@@ -115,10 +116,10 @@ alwaysApply: false
 
 | 用途 | 工具 |
 | --- | --- |
-| 包/依赖/版本 | [`SwiftPM`](https://www.swift.org/package-manager/)，`Package.swift` 声明 `swift-tools-version:6.2` + `platforms: [.macOS(.v26)]`，提交 `Package.resolved`；`swift build`/`swift run`。 |
+| 包/依赖/版本 | [`SwiftPM`](https://www.swift.org/package-manager/)，`Package.swift` 声明 `swift-tools-version:6.3` 与真实目标平台；`.swift-version` 锁 6.3.2；leaf 项目提交 `Package.resolved`；`swift build`/`swift run`。 |
 | 格式化 | [`swift-format`](https://github.com/swiftlang/swift-format) / [`SwiftFormat`](https://github.com/nicklockwood/SwiftFormat)。 |
 | Lint | [`SwiftLint`](https://github.com/realm/SwiftLint)，配置 `.swiftlint.yml`。 |
 | 测试/覆盖率 | `swift test --enable-code-coverage`；[`swift-testing`](https://github.com/swiftlang/swift-testing)。 |
-| 构建 | `swift build`（发布配 `-c release`）；带 UI/资源的 app 用 Xcode 26 的 `xcodebuild`。 |
+| 构建 | `swift build`（发布配 `-c release`）；带 Apple UI/资源的 app 用匹配当前 Swift toolchain 的 Xcode `xcodebuild`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook)：对暂存 `*.swift` 跑 `swift-format`/`SwiftFormat` 格式校验、`SwiftLint`；CI 重复执行并运行 `swift build`/`swift test`。
+- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 对暂存 `*.swift` 跑 `swift-format`/`SwiftFormat` 与 `SwiftLint`；CI 对全项目重复格式/Lint，并运行 `swift build`、`swift test`。

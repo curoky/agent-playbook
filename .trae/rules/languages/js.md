@@ -1,6 +1,6 @@
 ---
 description: 编写 JavaScript/TypeScript 代码，或为 JS/TS 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts
+globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts,package.json,tsconfig*.json,biome.json,biome.jsonc,pnpm-workspace.yaml
 alwaysApply: false
 ---
 
@@ -8,9 +8,9 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 新代码使用 TypeScript；新文件用 `.ts`/`.tsx`。
-- `tsconfig.json`: `strict: true`；建议 `noUncheckedIndexedAccess`。模块统一 ESM (`import`/`export`)。
-- `package.json`: `"engines": { "node": ">=22" }` 与 `"type": "module"`；用 `.nvmrc` 或 Volta 锁本地 Node。
+- 新代码使用官方最新稳定 TypeScript（截至 2026-07 为 7.0.x）；新文件用 `.ts`/`.tsx`。需 Compiler API 的工具并装 `@typescript/typescript6` 兼容包，不把项目编译器降级。
+- `tsconfig.json`: `strict: true`、`target: es2025`、`module: esnext`；建议 `noUncheckedIndexedAccess`。模块统一 ESM (`import`/`export`)。
+- 生产项目用 Node 24 Active LTS；明确追新且依赖已兼容时可用 Node 26 Current。`package.json` 写对应 `engines`、`"type": "module"` 与精确 `packageManager`，`.nvmrc` 或 Volta 锁具体 Node patch。
 - 现代语法优先：`?.`、`??`、解构、展开、模板字符串、`async`/`await`、顶层 `await`、`Array.at/findLast/toSorted`、`??=`/`||=`；可读性优先。
 - 禁止：`var`、`==`/`!=`、`namespace`、CommonJS `require`/`module.exports`、`enum`（用 `as const` 联合类型）、`any`。
 
@@ -112,7 +112,7 @@ alwaysApply: false
 | Lint/格式化 | [`biome`](https://github.com/biomejs/biome)，配置 `biome.json`。 |
 | 类型检查 | `tsc --noEmit`，`strict: true`。 |
 | 测试 | [`vitest`](https://github.com/vitest-dev/vitest)。 |
-| 构建/打包 | [`tsup`](https://github.com/egoist/tsup) / [`tsdown`](https://github.com/rolldown/tsdown)；应用用框架构建。 |
+| 构建/打包 | [`tsdown`](https://github.com/rolldown/tsdown)；应用用框架构建；存量 `tsup` 项目按官方迁移指南升级。 |
 | 直接运行 TS | [`tsx`](https://github.com/privatenumber/tsx)。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook)：对暂存 `*.{ts,tsx,js,jsx}` 跑 `biome` 与 `tsc`。
+- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 跑 `biome check --staged`；CI 跑全项目 `biome ci`、`tsc --noEmit`、`vitest` 与构建。

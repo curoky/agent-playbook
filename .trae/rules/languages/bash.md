@@ -9,9 +9,10 @@ alwaysApply: false
 ## 0. 使用边界与基线
 
 - Shell 只做命令粘合和流程编排；出现复杂数据结构、非平凡字符串/数值处理、需单测的业务逻辑时改用 Python/Go。
-- 可移植脚本用 `#!/usr/bin/env bash`；确需 POSIX 兼容才用 `#!/bin/sh` 并避免 Bash 专属语法。
-- 脚本头统一 `set -euo pipefail`；遍历文件名等场景谨慎设置 `IFS=$'\n\t'`。
-- Bash 4.4+ 为基线，推荐 5.x；使用关联数组、`mapfile` 等特性时在文件头标最低版本。
+- 需要在未额外安装 shell 的 macOS/Linux 上运行时，用 `#!/bin/sh` 并严格遵循 POSIX；`#!/usr/bin/env bash` 只负责从 `PATH` 查找 Bash，不保证版本。
+- Bash 脚本头用 `set -euo pipefail`；POSIX `sh` 用 `set -eu`，需要检查管道中间命令状态时拆开执行，不依赖非标准 `pipefail`。仅在 Bash 中按需设置 `IFS=$'\n\t'`；POSIX `sh` 不使用 ANSI-C 引号。
+- 现代 Bash 新脚本基线为官方最新稳定 5.3.x；在文件头注明安装前提，并在入口用 `BASH_VERSINFO` 校验至少 5.3，不满足时向 stderr 报错并退出。不能保证该 runtime 时改写 POSIX `sh`。
+- 以下未明确标注 POSIX 的语法和实践仅适用于 Bash；写 `#!/bin/sh` 时只用 POSIX 定义的语法与工具行为。
 - 现代 Bash：`[[ ... ]]`、`(( ... ))`、`$(...)`、`${var:-default}`、`${var:?msg}`、`${var//a/b}`、数组、`declare -A`、`mapfile -t lines < file`。
 - 禁止：`eval` 拼命令、反引号命令替换、解析 `ls` 输出、无引号变量展开、未加引号的裸测试如 `[ $var == ... ]`。
 
@@ -26,7 +27,7 @@ alwaysApply: false
 
 ## 2. 错误、清理、子进程
 
-- 依赖 `set -euo pipefail`；容错命令用显式判断或局部 `|| true`，不全局关闭严格模式。
+- 保持 §0 对应 shell dialect 的严格模式；容错命令用显式判断或局部 `|| true`，不全局关闭严格模式。
 - 临时文件、后台进程用 `trap 'cleanup' EXIT` 或 `trap ... ERR` 清理。
 - 外部命令先 `command -v tool >/dev/null` 校验；参数缺失/非法时向 stderr 输出用法并非零退出。
 - 成功 `exit 0`；失败用有区分度的非零码。正常结果输出 stdout，错误/日志输出 stderr。
@@ -42,7 +43,7 @@ alwaysApply: false
 
 ## 4. 注释与测试
 
-- 文件头写脚本用途、`Usage:`、外部命令依赖、最低 Bash 版本。
+- 文件头写脚本用途、`Usage:`、外部命令依赖、shell dialect；Bash 脚本另写最低版本。
 - 非平凡函数注释入参、全局副作用、返回约定；注释写意图，不复述命令。
 - 测试用 [`bats-core`](https://github.com/bats-core/bats-core)；可测逻辑拆成函数后在测试中 `source`。
 - `shellcheck` 零告警是最低门槛。

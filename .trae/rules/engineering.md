@@ -11,7 +11,7 @@ alwaysApply: false
 
 **核心原则**：按功能组织，目录可预测、职责单一、入口清晰。
 
-- **标准目录布局**：源码放 `src/`、脚本放 `scripts/`、文档放 `docs/`；配置文件放仓库根。测试就近放 `*.test.ts` / `test_*.py` 或集中放 `tests/`，团队内统一其一。Go 用 `cmd/<app>/main.go`、`internal/`、`pkg/`、就近 `*_test.go`。C++ 用 `src/` + `include/<project>/` + `tests/`，各目录放 `BUILD.bazel`，根目录放 `MODULE.bazel`/`.bazelrc`/`.bazelversion`，公共头与实现分离，第三方依赖经 Bazel（`bazel_dep`）引入不入库。
+- **标准目录布局**：源码放 `src/`、脚本放 `scripts/`、文档放 `docs/`；配置文件放仓库根。测试就近放 `*.test.ts` / `test_*.py` 或集中放 `tests/`，团队内统一其一。Go 用 `cmd/<app>/main.go`、`internal/`、`pkg/`、就近 `*_test.go`。C++ 用 `src/` + `include/<project>/` + `tests/`，各目录放 `BUILD.bazel`，根目录放 `MODULE.bazel`/`.bazelrc`/`.bazelversion`；Bazel 9 显式声明 `rules_cc`，公共头与实现分离，第三方依赖经 `bazel_dep` 引入不入库。
 - **按功能分模块**：优先按业务领域/功能切分目录，而非 controllers/services/utils 等技术层大杂烩。Go 避免 `util`/`common`/`base` 等无意义包；C++ 按职责划分命名空间与目录，避免 `utils.h` 大杂烩头文件。
 - **单包 vs monorepo**：单一职责项目用单包；多个可独立发布的包用 monorepo（JS `pnpm` workspace，Python `uv` workspace，Go module + `go.work`，C++ 单一 Bazel workspace + 多 `BUILD.bazel`）。跨包用 `//path/to:target` 标签引用，库 target 设 `visibility`。
 - **文件职责单一**：一个文件聚焦一个模块/类/功能；文件过大（经验值数百行）即按职责拆分（C++ 中头文件 `.hpp` 与实现 `.cpp` 配对、一个主要类一对文件）。
@@ -21,7 +21,7 @@ alwaysApply: false
 
 **核心原则**：配置集中声明、启动即校验、按环境注入；代码不散落读取裸环境变量。
 
-- **配置集中且校验**：所有配置集中定义并在启动时校验。JS 用 `zod` 解析 `process.env`，Python 用 `pydantic-settings`，Go 用 `envconfig`/`viper` 映射到 struct，C++ 解析到强类型 struct（`toml++`/`CLI11`/环境变量）；校验失败立即 fail-fast。
+- **配置集中且校验**：所有配置集中定义并在启动时校验。JS 用 `zod` 解析 `process.env`，Python 用 `pydantic-settings`，Go 用 `caarlos0/env`/`viper` 映射到 struct，C++ 解析到强类型 struct（`toml++`/`CLI11`/环境变量）；校验失败立即 fail-fast。
 - **分层来源**：优先级「默认值 < 配置文件 < 环境变量」；多环境（dev/staging/prod）通过环境变量切换，不在代码里散落 `if env === 'prod'` 判断。
 - **`.env` 约定**：本地用 `.env`（不提交），仓库提供 `.env.example` 列出所有必填项与说明。
 - **必填与默认**：明确区分必填项（缺失即报错）与可选项（有合理默认值）；类型在 Schema / struct tag 中声明。
@@ -29,13 +29,13 @@ alwaysApply: false
 
 ## 3. 统一工具链（跨语言）
 
-**核心原则**：用统一现代的工具链，配置入库，本地/pre-commit/CI 命令一致、结果可复现。
+**核心原则**：用统一现代的工具链，配置入库，本地与 CI 复用配置和脚本入口，按反馈时延分层执行、结果可复现。
 
 - **工具选型偏好**：优先选速度快、配置少、能合并多职责的工具（如 `biome`、`ruff` 一体化 Lint + 格式化）。
 - **配置与锁文件入库**：项目的配置文件与锁文件必须提交，保证依赖可复现；具体文件名清单见各语言规范的版本/工具链相关章节。
-- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤（`{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile；`pre-commit` 跑格式/lint/类型/测试，`commit-msg` 挂 `commitlint`（见 §5）。
-- **关键检查可一键运行**，并在 CI 与 pre-commit 强制执行。
-- **CI 与 pre-commit 命令完全一致**：格式化校验、Lint/静态分析、类型检查/vet、测试与本地、pre-commit 完全一致，避免「本地过、CI 挂」。
+- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤（`{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile；`pre-commit` 只跑可按暂存文件执行的 format/lint 等秒级检查，`pre-push` 可按项目规模运行类型检查和测试，`commit-msg` 挂 `commitlint`（见 §5）。
+- **完整检查可一键运行**：提供一个项目级命令串起格式校验、Lint/静态分析、类型检查/vet、测试与构建；本地可主动运行，CI 强制执行。
+- **复用入口而非强求同一范围**：pre-commit、pre-push、CI 调用同一组底层脚本和配置，但按耗时与检查粒度取子集；项目级类型检查、测试、构建与漏洞扫描不得伪装成 staged-file 检查。
 
 **跨语言工具链对照表**（概览；具体命令/配置文件名/flag 见各语言规范的版本/工具链相关章节）：
 
@@ -50,21 +50,24 @@ alwaysApply: false
 
 ## 4. 语言与工具版本基线
 
-**核心原则**：用当前主流支持的较新版本，避免 EOL；版本号在配置中显式锁定以保团队一致。锁定方式与推荐/禁止语法见各语言规范 §0。
+**核心原则**：新项目默认用官方最新稳定且生态兼容的版本，避免 EOL 与预发布版；落地前重新核实，并在配置中精确锁定。存量项目按既有兼容边界升级，不静默改版本。
 
-**版本基线**（「最低」为下限、「推荐」为新项目默认；截至 2026-06，落地按官方最新稳定版校准）：
+**新项目默认快照**（截至 2026-07；这是离线兜底，不替代落地时查官方发布页）：
 
-| 语言 / 项 | 最低版本 | 推荐版本 |
+| 语言 / 项 | 新项目默认 | 发布轨道 / 兼容说明 |
 | --- | --- | --- |
-| Node.js | 22 LTS | 24 LTS / 最新 26.x |
-| TypeScript | 5.9 | 6.0.x（`strict: true`、`target: es2025`、`module: esnext`） |
-| Python | 3.12 | 3.14.x |
-| Go | 1.25（官方支持最新两个大版本） | 1.26.x |
-| C++ 标准 | C++20 | C++23 |
-| C++ 编译器 | GCC 12 / Clang 15 / MSVC 19.3x | 最新稳定版（GCC 14+ / Clang 18+） |
-| Swift | 6.2（Swift 6 language mode，macOS 26+ / Xcode 26） | 6.2.x（strict concurrency `complete` + Approachable Concurrency） |
-| Bazel | 7.x（bzlmod） | 最新（`.bazelversion` 固定） |
-| Bash | 4.4 | 5.x（`#!/usr/bin/env bash` + `set -euo pipefail`） |
+| Node.js | 24.x Active LTS（生产） | 26.x Current 仅用于明确追新且依赖已兼容的项目；生产遵循 Node 官方 LTS 建议 |
+| TypeScript | 7.0.x（`strict: true`、`target: es2025`、`module: esnext`） | 需要 Compiler API 的工具可并装 `@typescript/typescript6`，不无声把项目编译器降回 6.x |
+| Python | 3.14.x | 3.15 仍为 pre-release，不默认采用 |
+| Go | 1.26.x | `go` 与 `toolchain` 指令锁定 1.26 最新 patch |
+| C++ 标准 | C++23 | C++26 正式发布前不作为稳定默认 |
+| C++ 编译器 | GCC 16.x / Clang 22.x / 最新稳定 MSVC | 选择目标平台最新稳定工具链并精确锁定 |
+| Swift | 6.3.x（Swift 6 language mode） | 平台版本按 Apple / Linux / Windows / Wasm / Android 目标分别声明 |
+| Bazel | 9.2.x LTS（bzlmod） | 不默认用 Bazel 10 rolling；`.bazelversion` 固定 patch |
+| Bash | 5.3.x | 无法保证现代 Bash runtime 时改用 POSIX `sh` |
+
+- **精确锁定**：兼容范围用于发布声明，开发/CI runtime 与工具链锁到具体 patch。JS 提交 `packageManager` + `.nvmrc`/Volta，Python 提交 `.python-version`，Go 写 `toolchain`，C++ 固定 Bazel 与 hermetic compiler toolchain，Swift 用 Swiftly/Xcode 选择固定 toolchain；Bash 脚本启动时校验最低版本。
+- **升级判据**：最新版本若缺少关键 API 或生态支持，记录具体阻塞、官方来源与临时版本；阻塞解除后由 Renovate 或定期审计恢复到最新稳定版。
 
 ## 5. 提交规范（接线）
 
@@ -94,7 +97,9 @@ alwaysApply: false
 
 **核心原则**：依赖**可复现、可追溯、可审计**；锁定版本、定期升级、主动扫漏洞。
 
-- **锁文件必须提交**：JS `pnpm-lock.yaml`、Python `uv.lock`、Go `go.mod` + `go.sum`、C++ `MODULE.bazel` + `MODULE.bazel.lock`（与 §3 一致）；CI 校验一致性（`pnpm install --frozen-lockfile`、`uv sync --locked`、`go mod verify` + `go mod tidy` 后无 diff、`bazel mod deps --lockfile_mode=error`），禁静默更新。
+- **首次引入先核实**：从官方 registry / release 获取最新稳定兼容版，检查支持的 runtime、最近发布、归档/停维状态、安全公告与许可证；已归档、明确停维或仅有预发布版的库不得作为新项目默认。
+- **例外要留依据**：因框架 peer dependency、平台或迁移成本不能用最新稳定版时，在 PR/设计记录中写明阻塞和升级条件，不凭模型记忆选择旧版本。
+- **锁文件必须提交**：JS `pnpm-lock.yaml`、Python `uv.lock`、Go `go.mod` + `go.sum`、C++ `MODULE.bazel` + `MODULE.bazel.lock`、Swift leaf 项目的 `Package.resolved`（与 §3 及 Swift 规则一致）；CI 分别用 `pnpm install --frozen-lockfile`、`uv sync --locked`、`go mod verify` + `go mod tidy` 后无 diff、`bazel mod deps --lockfile_mode=error`、`swift build --disable-automatic-resolution` 校验一致性，禁静默更新。
 - **版本约束清晰**：直接依赖声明明确范围，运行版本以锁文件为准。
 
 **自动升级**：
@@ -121,7 +126,7 @@ alwaysApply: false
 **核心原则**：CI 检查与本地一致、快速反馈、全绿才合并；发布自动化、可复现。
 
 - **必跑检查清单**：安装（锁文件校验）→ 格式校验 → Lint → 类型检查/`go vet` → 测试（带覆盖率，Go 加 `-race`）→ 构建 → 漏洞扫描；任一失败即阻断。
-- **与本地一致**：CI 命令与本地、pre-commit 一致（见 §3），避免「本地过、CI 挂」。
+- **与本地一致**：CI 调用本地可一键运行的完整检查入口；pre-commit 只取其中适合暂存文件的快速子集（见 §3）。
 - **快速反馈**：拆分并行任务、用缓存缩短时长；快检查（Lint/类型）前置。
 - **发布自动化**：合并主分支后由 Conventional Commits 驱动版本与 changelog（`changesets`/`release-please`/`towncrier`），自动打 tag 并发布。
 - **最小权限与可复现**：CI 凭据最小权限，安装用 `--frozen-lockfile`/`--locked`。

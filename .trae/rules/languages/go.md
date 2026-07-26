@@ -1,6 +1,6 @@
 ---
 description: 编写 Go 代码，或为 Go 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.go
+globs: *.go,go.mod,go.sum,go.work,.golangci.yml,.golangci.yaml
 alwaysApply: false
 ---
 
@@ -8,8 +8,8 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 必用 Go Modules；`go.mod` 声明 `go 1.25` 或更高，并用 `toolchain` 固定团队工具链。
-- 现代语法/标准库优先：泛型、`slices`、`maps`、`cmp`、`log/slog`、`errors.Is/As`、`fmt.Errorf("...: %w", err)`、`context.Context`、`for range n`、`range over func`；可读性优先。
+- 必用 Go Modules；新项目使用官方最新稳定 Go（截至 2026-07 为 1.26.5），`go.mod` 声明 `go 1.26.0`、`toolchain go1.26.5`。
+- 现代语法/标准库优先：泛型、`new(expr)`、`slices`、`maps`、`cmp`、`log/slog`、`errors.Is/As`、`fmt.Errorf("...: %w", err)`、`context.Context`、`for range n`、`range over func`；用 Go 1.26 `go fix` modernizers 升级旧惯用法，可读性优先。
 - 禁止：用 `panic` 处理可预期错误、`ioutil.*`、裸 goroutine 无生命周期管理、忽略 `error`、滥用 `interface{}`/`any`。
 
 ## 1. 风格与模块
@@ -73,7 +73,7 @@ alwaysApply: false
 | 错误处理 | 标准库 [`errors`](https://pkg.go.dev/errors) | `errors.Is/As` + `%w`。 |
 | 切片/映射 | 标准库 [`slices`](https://pkg.go.dev/slices) / [`maps`](https://pkg.go.dev/maps) | 替代手写循环和 `golang.org/x/exp/*`。 |
 | CLI | 标准库 `flag` / [`cobra`](https://github.com/spf13/cobra) | 单层参数用 `flag`；复杂多级子命令用 `cobra`。 |
-| 配置 | [`envconfig`](https://github.com/kelseyhightower/envconfig) / [`viper`](https://github.com/spf13/viper) | 纯环境变量用 `envconfig`；多来源/热加载/多格式用 `viper`。 |
+| 配置 | [`caarlos0/env`](https://github.com/caarlos0/env) / [`viper`](https://github.com/spf13/viper) | 纯环境变量用 `caarlos0/env`；多来源/热加载/多格式用 `viper`。 |
 | 校验 | [`go-playground/validator`](https://github.com/go-playground/validator) | 必须；struct tag 校验外部输入。 |
 | SQL | [`sqlc`](https://github.com/sqlc-dev/sqlc) / [`sqlx`](https://github.com/jmoiron/sqlx) / [`gorm`](https://github.com/go-gorm/gorm) | 默认 `sqlc`；轻量增强用 `sqlx`；全功能 ORM 才用 `gorm`。 |
 | 迁移 | [`golang-migrate`](https://github.com/golang-migrate/migrate) | 必须。 |
@@ -82,7 +82,7 @@ alwaysApply: false
 | Mock | [`uber-go/mock`](https://github.com/uber-go/mock) | 按需；替代已归档 `golang/mock`。 |
 | HTTP 重试 | 标准库 `net/http` + [`go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 需退避重试时用。 |
 | UUID | [`google/uuid`](https://github.com/google/uuid) | 按需。 |
-| DI | 手动注入 / [`wire`](https://github.com/google/wire) | 小中型项目手动；依赖图庞大时用编译期 `wire`。 |
+| DI | 手动注入 | 构造函数/工厂显式组装；`google/wire` 已归档，仅存量项目维持或迁移。 |
 | Lint | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须；v2.x。 |
 | 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | 必须。 |
 | PostgreSQL | [`pgx`](https://github.com/jackc/pgx) | 必须；不新选 `lib/pq`。 |
@@ -99,16 +99,16 @@ alwaysApply: false
 - `net/http` vs `chi` vs `echo/gin`: 简单服务用 Go 1.22+ `net/http`；中间件链/分组路由用 `chi`；绑定/校验/渲染等重型生态用 `echo`/`gin`。
 - `log/slog` vs `zap`: 默认 `slog`；benchmark 证明 `slog` 不够时换 `zap`。
 - `testify` vs `testing`: 核心逻辑优先表驱动 + `t.Run`；断言极多时用 `require/assert`，避免 `testify/suite` 掩盖结构。
-- `viper` vs `envconfig`: 只读环境变量用 `envconfig`；多来源/热加载/多格式用 `viper`。
+- `viper` vs `caarlos0/env`: 只读环境变量用 `caarlos0/env`；多来源/热加载/多格式用 `viper`。
 - `errgroup` vs `sync.WaitGroup`: 需要首错取消和统一等待用 `errgroup`；简单等待可用 `WaitGroup`。
 - `pgx` vs `lib/pq`: 新项目用 `pgx`；`lib/pq` 不新选。
-- `wire` vs 手动注入: 小中型项目手动；依赖图庞大再用 `wire`；不用运行时反射 DI。
+- DI 默认手动显式组装；新项目不用已归档的 `google/wire`，也不为省少量装配代码引入运行时反射容器。
 
 ## 8. 工具链
 
 | 用途 | 工具 |
 | --- | --- |
-| 依赖/版本 | `go mod` + `toolchain`，提交 `go.mod`、`go.sum`；用 `go mod tidy`。 |
+| 依赖/版本 | `go mod` + `toolchain`，提交 `go.mod`、`go.sum`；用 `go mod tidy`。开发工具用 `tool` directive（`go get -tool` / `go tool`）锁入 `go.mod`。 |
 | 格式化 | `gofmt` / [`goimports`](https://pkg.go.dev/golang.org/x/tools/cmd/goimports)。 |
 | Lint | [`golangci-lint`](https://github.com/golangci/golangci-lint) v2.x，配置 `.golangci.yml`。 |
 | 静态检查 | `go vet` / [`staticcheck`](https://github.com/dominikh/go-tools)。 |
@@ -116,4 +116,4 @@ alwaysApply: false
 | 漏洞扫描 | [`govulncheck ./...`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)。 |
 | 构建 | `go build`；交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook)：跑 `gofmt -l`/`goimports`、`go vet`、`golangci-lint run`、`go test`。
+- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 对暂存 Go 文件跑 `gofmt`/`goimports` 校验；CI 跑全项目 `go vet`、`staticcheck`、`golangci-lint run`、`go test -race -cover ./...` 与 `govulncheck ./...`。
