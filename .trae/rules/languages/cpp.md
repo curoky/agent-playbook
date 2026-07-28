@@ -81,30 +81,19 @@ alwaysApply: false
 | HTTP/网络服务 | [`Boost.Asio`](https://github.com/boostorg/asio) / [`Drogon`](https://github.com/drogonframework/drogon) | 底层 TCP/UDP/协程异步用 Asio；完整 Web 框架用 Drogon。 |
 | CLI | [`CLI11`](https://github.com/CLIUtils/CLI11) | 必须。 |
 | 配置 | [`toml++`](https://github.com/marzer/tomlplusplus) / [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) | TOML/YAML；JSON 配置复用 `nlohmann/json`。 |
-| 错误结果 | `std::expected` / [`tl::expected`](https://github.com/TartanLlama/expected) | C++23 用标准库；C++20 用 `tl::expected`。 |
+| 错误结果 | `std::expected` / [`tl::expected`](https://github.com/TartanLlama/expected) | 可预期失败用；C++23 用标准库，C++20 用 `tl::expected`；不可恢复才异常，避免 `int` 返回 + out 参数。 |
 | 通用补全 | [`abseil`](https://github.com/abseil/abseil-cpp) | 按需；标准库缺口时用。 |
 | 高性能基础库 | [`folly`](https://github.com/facebook/folly) | 按需；高并发服务端确需其能力时用。 |
 | 异步网络框架 | [`wangle`](https://github.com/facebook/wangle) | 按需；依赖 `folly`。 |
 | Thrift RPC | [`fbthrift`](https://github.com/facebook/fbthrift) | 按需；既有 Thrift/Facebook 生态。 |
 | gRPC | [`grpc`](https://github.com/grpc/grpc) | 必须；新建跨语言服务默认。 |
 | SQLite | [`sqlite_orm`](https://github.com/fnc12/sqlite_orm) / [`SQLiteCpp`](https://github.com/SRombauts/SQLiteCpp) | 嵌入式 SQLite；服务端 DB 用厂商官方驱动。 |
-| 加密 | [`libsodium`](https://github.com/jedisct1/libsodium) / OpenSSL | 新代码优先 `libsodium`；TLS/X.509/既有 OpenSSL 生态用 OpenSSL。 |
+| 加密 | [`libsodium`](https://github.com/jedisct1/libsodium) / OpenSSL | 新代码优先 `libsodium`；TLS/X.509/既有 OpenSSL 生态用 OpenSSL；不自行实现加密原语。 |
 | 协程补全 | 标准库 `<coroutine>` / [`Boost.Asio`](https://github.com/boostorg/asio) | 同步生成器优先标准库，异步 I/O 用 Asio coroutine；不在新项目引入基于旧 Coroutines TS 的实验性 `cppcoro`。 |
 | 数值/线代 | [`Eigen`](https://gitlab.com/libeigen/eigen) | 按需。 |
 | Boost | [`Boost`](https://github.com/boostorg/boost) | 按需；只依赖用到的子库。 |
 
-## 7. 多候选判据
-
-- `Catch2` + `trompeloeil`: 默认测试/mock 组合；不为 mock 切测试框架。
-- `fmt` vs `<format>`: 默认 `fmt`；目标编译器完整支持且追求零依赖时才退回标准库。
-- `nlohmann/json` vs `glaze`: 默认 `nlohmann/json`；解析/序列化是热点且结构体已知时用 `glaze`。
-- `std::expected` vs 异常 vs 错误码: 可预期失败用 `expected`；不可恢复才异常；避免 `int` 返回 + out 参数。
-- `Boost.Asio` vs `Drogon` vs `cpr`: 客户端请求用 `cpr`；底层协议/协程异步用 Asio；完整 HTTP 服务端用 Drogon。
-- `libsodium` vs OpenSSL: 新代码优先 `libsodium`；TLS、X.509、OpenSSL 生态对接用 OpenSSL；不自行实现加密原语。
-- `grpc` vs `fbthrift`: 新建跨语言服务默认 `grpc`；既有 Thrift/Facebook 生态或 fbthrift 特有异步/流式能力才用 `fbthrift`。
-- `folly/wangle`、Boost、abseil: 标准库有能力时不用；普通项目优先标准库或 abseil，只有高并发服务端确需时用 `folly/wangle`。
-
-## 8. 工具链
+## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |

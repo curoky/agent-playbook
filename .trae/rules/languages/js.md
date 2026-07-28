@@ -69,8 +69,8 @@ alwaysApply: false
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
 | 路径 | [`pathe`](https://github.com/unjs/pathe) | 必须；跨平台路径一致。 |
-| 错误结果 | [`neverthrow`](https://github.com/supermacro/neverthrow) | 按需；团队接受函数式风格时用。 |
-| 日期/时间 | [`Temporal`](https://github.com/tc39/proposal-temporal) | 必须；运行时缺失用 `@js-temporal/polyfill`。 |
+| 错误结果 | [`neverthrow`](https://github.com/supermacro/neverthrow) | 按需；希望错误进入类型系统时用，否则用原生 `try/catch` + 保留 `cause`。 |
+| 日期/时间 | [`Temporal`](https://github.com/tc39/proposal-temporal) | 时区/跨日历/时长运算用；运行时缺失用 `@js-temporal/polyfill`；展示格式化/相对时间用 [`date-fns`](https://github.com/date-fns/date-fns)，既有 `dayjs` 可沿用。 |
 | Schema | [`zod`](https://github.com/colinhacks/zod) | 必须；前端 bundle 是硬约束且校验简单时用 [`valibot`](https://github.com/fabian-hiller/valibot)。 |
 | HTTP | [`ofetch`](https://github.com/unjs/ofetch) | 按需；需要自动解析、错误处理、重试时用。 |
 | CLI | [`commander`](https://github.com/tj/commander.js) / [`citty`](https://github.com/unjs/citty) | 必须；通用选 `commander`，unjs/极简选 `citty`。 |
@@ -85,26 +85,15 @@ alwaysApply: false
 | 子进程 | [`execa`](https://github.com/sindresorhus/execa) | 按需；简单一次性命令可用 `node:child_process`。 |
 | 终端输出 | [`picocolors`](https://github.com/alexeyraspopov/picocolors) / [`ora`](https://github.com/sindresorhus/ora) | 按需；着色/加载动画。 |
 | 并发限流 | [`p-limit`](https://github.com/sindresorhus/p-limit) | 按需。 |
-| Web 框架 | [`hono`](https://github.com/honojs/hono) / [`fastify`](https://github.com/fastify/fastify) | 必须；边缘/多运行时选 `hono`，Node 高吞吐/schema 驱动选 `fastify`。 |
+| Web 框架 | [`hono`](https://github.com/honojs/hono) / [`fastify`](https://github.com/fastify/fastify) | 必须；边缘/多运行时选 `hono`，Node 高吞吐/schema 驱动选 `fastify`，维护老项目才用 `express`。 |
 | 前端数据缓存 | [`@tanstack/query`](https://github.com/TanStack/query) | 必须；服务端状态缓存、重试、失效。 |
-| React UI | [`Radix Themes`](https://github.com/radix-ui/themes) | 按需；需要源码入仓可选 `shadcn/ui`。 |
+| React UI | [`Radix Themes`](https://github.com/radix-ui/themes) | 按需；需组件源码入仓选 `shadcn/ui`（接受升级靠 copy/diff）。 |
 | 前端状态 | [`zustand`](https://github.com/pmndrs/zustand) | 按需；复杂数据流再考虑 `redux-toolkit`。 |
 | 队列 | [`bullmq`](https://github.com/taskforcesh/bullmq) | 必须；Redis 可靠任务队列。 |
 | WebSocket | [`ws`](https://github.com/websockets/ws) | 按需；需房间/降级用 `socket.io`。 |
 | 加密/哈希 | [`node:crypto`](https://nodejs.org/api/crypto.html) / `@node-rs/argon2` | 标准库优先；密码哈希用 `scrypt`/`argon2`。 |
 
-## 7. 多候选判据
-
-- `zod` vs `valibot`: 默认 `zod`；前端 bundle 体积硬约束且校验简单时用 `valibot`；后端/Node 用 `zod`。
-- `Temporal` vs `date-fns` vs `dayjs`: 时区、跨日历、时长运算用 `Temporal`；展示格式化/相对时间用 `date-fns`；维护既有 `dayjs` 可沿用；新项目不用 `moment`。
-- `hono` vs `fastify` vs `express`: 边缘/多运行时选 `hono`；Node 高吞吐/schema 驱动选 `fastify`；维护老项目才用 `express`。
-- `neverthrow` vs `try/catch`: 希望错误进入类型系统时用 `neverthrow`；否则用原生 `try/catch` + 自定义 `Error`，保留 `cause`。
-- `execa` vs `node:child_process`: 跨平台、Promise、流处理、自动转义用 `execa`；简单命令用内置。
-- `vitest` vs `node:test`: 应用/前端用 `vitest`；零依赖纯 Node 工具库可用 `node:test`。
-- `nanoid` vs `crypto.randomUUID()`: 标准 UUID 用内置；短、URL 友好、可定制字母表用 `nanoid`。
-- UI：React 默认 `Radix Themes`；不用 React 时选对应生态成熟组件库；需要组件源码入仓时选 `shadcn/ui` 并接受升级靠 copy/diff。
-
-## 8. 工具链
+## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |

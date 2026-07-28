@@ -99,18 +99,12 @@ alwaysApply: false
 | Lint | [`SwiftLint`](https://github.com/realm/SwiftLint) | 必须；配置 `.swiftlint.yml`。 |
 | 格式化 | [`swift-format`](https://github.com/swiftlang/swift-format) / [`SwiftFormat`](https://github.com/nicklockwood/SwiftFormat) | 二选一；官方工具链一致性优先 `swift-format`。 |
 
-## 7. 多候选判据
+## 7. 语言构造选择
 
-- `Vapor` vs `Hummingbird`: 需 ORM/认证/模板等全功能生态用 Vapor 4；追求轻量、可组合、贴近 SSWG 用 Hummingbird 2。
-- `swift-testing` vs `XCTest`: 新代码用 Swift Testing（`@Test`/`#expect`/`#require`）；维护存量或需性能/UI 测试沿用 XCTest。
-- `swift-format` vs `SwiftFormat`: 追求 Apple 官方工具链一致性用 `swift-format`；规则更丰富/既有社区约定用 `SwiftFormat`；二选一避免规则打架。
-- `URLSession` vs `async-http-client`: macOS 客户端默认 `URLSession`（async/await）；服务端高吞吐或需连接池精细控制用 `async-http-client`。
-- `GRDB` vs `Fluent` vs `SwiftData`: 服务端/需完全掌控 SQL 用 GRDB；Vapor 全栈用 Fluent；macOS 客户端持久化用 SwiftData（新）/Core Data（存量）。
 - `struct` vs `class`: 默认 `struct` 值语义；需引用语义、身份标识、继承或 `deinit` 才用 `class`。
 - `Copyable` vs `~Copyable`: 默认可复制值类型；仅当需唯一所有权（独占资源、带 `deinit` 的 struct、Swift-native 锁/原子）或杜绝隐式拷贝的性能诉求时才用 `~Copyable` + `consuming`/`borrowing`；其「不可复制」会传染到含它的类型，别为普通模型强加。
 - `some` vs `any`: 编译期单一具体类型用 `some`（opaque，零开销）；运行时异构存储用 `any`（existential，有开销）。
 - `Array` vs `InlineArray`: 默认 `Array`；编译期已知固定长度、性能敏感（解析/音视频/游戏循环）用 `InlineArray`（`[N of T]`，栈上、无堆分配）。
-- `CryptoKit` vs `swift-crypto`: macOS 原生默认 `CryptoKit`；确需把代码移植到 Linux/跨平台时用 `swift-crypto`（API 一致）。
 
 ## 8. 工具链
 

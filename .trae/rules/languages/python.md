@@ -72,7 +72,7 @@ alwaysApply: false
 | CLI | [`typer`](https://github.com/fastapi/typer) | 必须；替代 `argparse`。 |
 | 数据校验/模型 | [`pydantic`](https://github.com/pydantic/pydantic) | 必须；v2。 |
 | 配置 | [`pydantic-settings`](https://github.com/pydantic/pydantic-settings) | 必须；环境变量/`.env` 加载并校验。 |
-| HTTP | [`httpx`](https://github.com/encode/httpx) | 必须；同步/异步统一；维护老代码可沿用 `requests`。 |
+| HTTP | [`httpx`](https://github.com/encode/httpx) | 必须；同步/异步统一；维护老代码可沿用 `requests`；不新引入 `aiohttp`，除非需要特定服务端能力。 |
 | 日期/时间 | 标准库 `datetime` + `zoneinfo` / [`pendulum`](https://github.com/python-pendulum/pendulum) | 简单场景标准库；链式 API、区间/解析需求用 `pendulum`。 |
 | 终端输出 | [`rich`](https://github.com/Textualize/rich) | 按需；表格、进度条、彩色输出。 |
 | 日志 | [`loguru`](https://github.com/Delgan/loguru) / `logging` | 应用/脚本用 `loguru`；库用 `logging`。 |
@@ -82,7 +82,7 @@ alwaysApply: false
 | 包/环境 | [`uv`](https://github.com/astral-sh/uv) | 必须。 |
 | Lint/格式化 | [`ruff`](https://github.com/astral-sh/ruff) | 必须；`ruff check` + `ruff format`。 |
 | 类型检查 | [`mypy`](https://github.com/python/mypy) / [`pyright`](https://github.com/microsoft/pyright) | 必须；CI 严格门禁偏 `mypy`，编辑器反馈偏 `pyright`。 |
-| ORM | [`sqlalchemy`](https://github.com/sqlalchemy/sqlalchemy) / [`sqlmodel`](https://github.com/fastapi/sqlmodel) | 必须；复杂查询用 `sqlalchemy`，FastAPI 模型复用用 `sqlmodel`。 |
+| ORM | [`sqlalchemy`](https://github.com/sqlalchemy/sqlalchemy) / [`sqlmodel`](https://github.com/fastapi/sqlmodel) | 必须；复杂查询用 `sqlalchemy` 2.0，FastAPI 模型复用用 `sqlmodel`，轻量只读脚本可用标准库 `sqlite3`。 |
 | 迁移 | [`alembic`](https://github.com/sqlalchemy/alembic) | 必须。 |
 | DataFrame | [`polars`](https://github.com/pola-rs/polars) / [`pandas`](https://github.com/pandas-dev/pandas) | 新项目性能优先 `polars`；既有 pandas 生态用 `pandas`。 |
 | 任务队列 | [`taskiq`](https://github.com/taskiq-python/taskiq) / [`celery`](https://github.com/celery/celery) | asyncio-native、类型友好用 `taskiq`；成熟生态、多 broker/beat/复杂路由用 `celery`；存量 `arq` 仅维护或迁移。 |
@@ -96,16 +96,7 @@ alwaysApply: false
 | 数值 | [`numpy`](https://github.com/numpy/numpy) | 按需；高层分析配 `polars`/`pandas`。 |
 | CLI 交互 | [`questionary`](https://github.com/tmbo/questionary) | 按需；纯展示进度用 `rich`。 |
 
-## 7. 多候选判据
-
-- `sqlalchemy` vs `sqlmodel`: 通用、复杂查询、完全控制用 `sqlalchemy` 2.0；FastAPI 且希望 ORM 表/API schema 复用时用 `sqlmodel`；轻量只读脚本可用 `sqlite3`。
-- `polars` vs `pandas`: 新项目、性能/内存/惰性计算优先用 `polars`；必须接既有 pandas 生态时用 `pandas`。
-- `taskiq` vs `celery`: asyncio-native、FastAPI 集成、可替换 broker 用 `taskiq`；成熟生态、多 broker、beat、复杂路由/重试用 `celery`；新项目不用已进入 maintenance-only 的 `arq`。
-- `loguru` vs `logging`: 应用/脚本用 `loguru`；库用标准 `logging`。
-- `mypy` vs `pyright`: CI 严格门禁用 `mypy`；编辑器实时反馈、新语法支持用 `pyright`；可并存。
-- `httpx` vs `requests`: 新项目用 `httpx`；维护老代码可沿用 `requests`；不新引入 `aiohttp`，除非需要特定服务端能力。
-
-## 8. 工具链
+## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |

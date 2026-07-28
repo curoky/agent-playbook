@@ -22,7 +22,7 @@
 
 规范按五个领域组织（供人阅读的地图；**文件不与领域一一对应**，同一领域可能分布在多个自洽文件中），规则正文优先写成给 agent 执行的短决策清单：
 
-- **技术栈与工具基线**：新项目/新依赖先由 `ai-collaboration.md` 的常驻 freshness gate 核实官方最新稳定兼容版，再按 `languages/{语言}.md` 锁定语法与版本；版本快照及跨语言工具链见 `engineering.md`，库选型见各语言规则的「库选型 / 多候选判据」。
+- **技术栈与工具基线**：新项目/新依赖先由 `ai-collaboration.md` 的常驻 freshness gate 核实官方最新稳定兼容版，再按 `languages/{语言}.md` 锁定语法与版本；版本快照及跨语言工具链见 `engineering.md`，库选型见各语言规则的「库选型」表（选择判据折进表格「条件」列，Swift 另有「语言构造选择」）。
 - **编码实践**：命名、函数与模块、类型安全与错误、异步/并发、注释、测试、安全、日志。入口为 `languages/{语言}.md`。
 - **项目与工程化**：项目结构、配置与环境管理。入口为 `engineering.md`。
 - **版本与协作**：提交（格式见 `git-commit-message.md`、接线见 `engineering.md`）、SemVer、changelog、依赖治理、CI/CD。入口为 `engineering.md`。

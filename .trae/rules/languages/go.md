@@ -77,8 +77,8 @@ alwaysApply: false
 | 校验 | [`go-playground/validator`](https://github.com/go-playground/validator) | 必须；struct tag 校验外部输入。 |
 | SQL | [`sqlc`](https://github.com/sqlc-dev/sqlc) / [`sqlx`](https://github.com/jmoiron/sqlx) / [`gorm`](https://github.com/go-gorm/gorm) | 默认 `sqlc`；轻量增强用 `sqlx`；全功能 ORM 才用 `gorm`。 |
 | 迁移 | [`golang-migrate`](https://github.com/golang-migrate/migrate) | 必须。 |
-| 并发组 | [`errgroup`](https://pkg.go.dev/golang.org/x/sync/errgroup) | 必须；等待、首错取消、限流。 |
-| 测试断言 | 标准库 `testing` / [`testify`](https://github.com/stretchr/testify) | 核心逻辑优先标准库；断言样板多时用 `require/assert`。 |
+| 并发组 | [`errgroup`](https://pkg.go.dev/golang.org/x/sync/errgroup) | 需首错取消和统一等待用；简单等待用 `sync.WaitGroup`。 |
+| 测试断言 | 标准库 `testing` / [`testify`](https://github.com/stretchr/testify) | 核心逻辑优先标准库表驱动 + `t.Run`；断言样板多时用 `require/assert`，避免 `testify/suite` 掩盖结构。 |
 | Mock | [`uber-go/mock`](https://github.com/uber-go/mock) | 按需；替代已归档 `golang/mock`。 |
 | HTTP 重试 | 标准库 `net/http` + [`go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 需退避重试时用。 |
 | UUID | [`google/uuid`](https://github.com/google/uuid) | 按需。 |
@@ -93,18 +93,7 @@ alwaysApply: false
 | gRPC | [`grpc-go`](https://github.com/grpc/grpc-go) | 必须；配 `protoc-gen-go`。 |
 | 时间 | 标准库 [`time`](https://pkg.go.dev/time) | 测试中注入时钟。 |
 
-## 7. 多候选判据
-
-- `sqlc` vs `sqlx` vs `gorm`: 默认 `sqlc`；少量样板增强仍写 SQL 用 `sqlx`；团队明确要全功能 ORM、动态查询、自动迁移且接受反射开销时用 `gorm`。
-- `net/http` vs `chi` vs `echo/gin`: 简单服务用 Go 1.22+ `net/http`；中间件链/分组路由用 `chi`；绑定/校验/渲染等重型生态用 `echo`/`gin`。
-- `log/slog` vs `zap`: 默认 `slog`；benchmark 证明 `slog` 不够时换 `zap`。
-- `testify` vs `testing`: 核心逻辑优先表驱动 + `t.Run`；断言极多时用 `require/assert`，避免 `testify/suite` 掩盖结构。
-- `viper` vs `caarlos0/env`: 只读环境变量用 `caarlos0/env`；多来源/热加载/多格式用 `viper`。
-- `errgroup` vs `sync.WaitGroup`: 需要首错取消和统一等待用 `errgroup`；简单等待可用 `WaitGroup`。
-- `pgx` vs `lib/pq`: 新项目用 `pgx`；`lib/pq` 不新选。
-- DI 默认手动显式组装；新项目不用已归档的 `google/wire`，也不为省少量装配代码引入运行时反射容器。
-
-## 8. 工具链
+## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |
