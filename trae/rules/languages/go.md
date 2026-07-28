@@ -68,41 +68,41 @@ alwaysApply: false
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| HTTP 服务/路由 | 标准库 [`net/http`](https://pkg.go.dev/net/http) | 简单服务直接用；中间件/分组路由用 [`chi`](https://github.com/go-chi/chi)；重生态再看 `echo`/`gin`。 |
-| 日志 | 标准库 [`log/slog`](https://pkg.go.dev/log/slog) | 日志是确认性能热点时再看 [`zap`](https://github.com/uber-go/zap)。 |
-| 错误处理 | 标准库 [`errors`](https://pkg.go.dev/errors) | `errors.Is/As` + `%w`。 |
-| 切片/映射 | 标准库 [`slices`](https://pkg.go.dev/slices) / [`maps`](https://pkg.go.dev/maps) | 替代手写循环和 `golang.org/x/exp/*`。 |
-| CLI | 标准库 `flag` / [`cobra`](https://github.com/spf13/cobra) | 单层参数用 `flag`；复杂多级子命令用 `cobra`。 |
-| 配置 | [`caarlos0/env`](https://github.com/caarlos0/env) / [`viper`](https://github.com/spf13/viper) | 纯环境变量用 `caarlos0/env`；多来源/热加载/多格式用 `viper`。 |
-| 校验 | [`go-playground/validator`](https://github.com/go-playground/validator) | 必须；struct tag 校验外部输入。 |
-| SQL | [`sqlc`](https://github.com/sqlc-dev/sqlc) / [`sqlx`](https://github.com/jmoiron/sqlx) / [`gorm`](https://github.com/go-gorm/gorm) | 默认 `sqlc`；轻量增强用 `sqlx`；全功能 ORM 才用 `gorm`。 |
-| 迁移 | [`golang-migrate`](https://github.com/golang-migrate/migrate) | 必须。 |
-| 并发组 | [`errgroup`](https://pkg.go.dev/golang.org/x/sync/errgroup) | 需首错取消和统一等待用；简单等待用 `sync.WaitGroup`。 |
-| 测试断言 | 标准库 `testing` / [`testify`](https://github.com/stretchr/testify) | 核心逻辑优先标准库表驱动 + `t.Run`；断言样板多时用 `require/assert`，避免 `testify/suite` 掩盖结构。 |
-| Mock | [`uber-go/mock`](https://github.com/uber-go/mock) | 按需；替代已归档 `golang/mock`。 |
-| HTTP 重试 | 标准库 `net/http` + [`go-retryablehttp`](https://github.com/hashicorp/go-retryablehttp) | 需退避重试时用。 |
-| UUID | [`google/uuid`](https://github.com/google/uuid) | 按需。 |
+| HTTP 服务/路由 | 标准库 `net/http` | 简单服务直接用；中间件/分组路由用 `chi`；重生态再看 `echo`/`gin`。 |
+| 日志 | 标准库 `log/slog` | 日志是确认性能热点时再看 `zap`。 |
+| 错误处理 | 标准库 `errors` | `errors.Is/As` + `%w`。 |
+| 切片/映射 | 标准库 `slices` / `maps` | 替代手写循环和 `golang.org/x/exp/*`。 |
+| CLI | 标准库 `flag` / `cobra` | 单层参数用 `flag`；复杂多级子命令用 `cobra`。 |
+| 配置 | `caarlos0/env` / `viper` | 纯环境变量用 `caarlos0/env`；多来源/热加载/多格式用 `viper`。 |
+| 校验 | `go-playground/validator` | 必须；struct tag 校验外部输入。 |
+| SQL | `sqlc` / `sqlx` / `gorm` | 默认 `sqlc`；轻量增强用 `sqlx`；全功能 ORM 才用 `gorm`。 |
+| 迁移 | `golang-migrate` | 必须。 |
+| 并发组 | `errgroup` | 需首错取消和统一等待用；简单等待用 `sync.WaitGroup`。 |
+| 测试断言 | 标准库 `testing` / `testify` | 核心逻辑优先标准库表驱动 + `t.Run`；断言样板多时用 `require/assert`，避免 `testify/suite` 掩盖结构。 |
+| Mock | `uber-go/mock` | 按需；替代已归档 `golang/mock`。 |
+| HTTP 重试 | 标准库 `net/http` + `go-retryablehttp` | 需退避重试时用。 |
+| UUID | `google/uuid` | 按需。 |
 | DI | 手动注入 | 构造函数/工厂显式组装；`google/wire` 已归档，仅存量项目维持或迁移。 |
-| Lint | [`golangci-lint`](https://github.com/golangci/golangci-lint) | 必须；v2.x。 |
-| 漏洞扫描 | [`govulncheck`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck) | 必须。 |
-| PostgreSQL | [`pgx`](https://github.com/jackc/pgx) | 必须；不新选 `lib/pq`。 |
-| Redis | [`redis/go-redis`](https://github.com/redis/go-redis) | 按需。 |
-| Kafka | [`twmb/franz-go`](https://github.com/twmb/franz-go) / `segmentio/kafka-go` | 纯 Go 优先 `franz-go`；生态兼容需求用 `kafka-go`。 |
-| 限流 | [`x/time/rate`](https://pkg.go.dev/golang.org/x/time/rate) | 标准库扩展；令牌桶。 |
-| 进度条 | [`progressbar`](https://github.com/schollz/progressbar) / [`mpb`](https://github.com/vbauerster/mpb) | 单条用 `progressbar`；多条并发/装饰器用 `mpb`。 |
-| gRPC | [`grpc-go`](https://github.com/grpc/grpc-go) | 必须；配 `protoc-gen-go`。 |
-| 时间 | 标准库 [`time`](https://pkg.go.dev/time) | 测试中注入时钟。 |
+| Lint | `golangci-lint` | 必须；v2.x。 |
+| 漏洞扫描 | `govulncheck` | 必须。 |
+| PostgreSQL | `pgx` | 必须；不新选 `lib/pq`。 |
+| Redis | `redis/go-redis` | 按需。 |
+| Kafka | `twmb/franz-go` / `segmentio/kafka-go` | 纯 Go 优先 `franz-go`；生态兼容需求用 `kafka-go`。 |
+| 限流 | `x/time/rate` | 标准库扩展；令牌桶。 |
+| 进度条 | `progressbar` / `mpb` | 单条用 `progressbar`；多条并发/装饰器用 `mpb`。 |
+| gRPC | `grpc-go` | 必须；配 `protoc-gen-go`。 |
+| 时间 | 标准库 `time` | 测试中注入时钟。 |
 
 ## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |
 | 依赖/版本 | `go mod` + `toolchain`，提交 `go.mod`、`go.sum`；用 `go mod tidy`。开发工具用 `tool` directive（`go get -tool` / `go tool`）锁入 `go.mod`。 |
-| 格式化 | `gofmt` / [`goimports`](https://pkg.go.dev/golang.org/x/tools/cmd/goimports)。 |
-| Lint | [`golangci-lint`](https://github.com/golangci/golangci-lint) v2.x，配置 `.golangci.yml`。 |
-| 静态检查 | `go vet` / [`staticcheck`](https://github.com/dominikh/go-tools)。 |
+| 格式化 | `gofmt` / `goimports`。 |
+| Lint | `golangci-lint` v2.x，配置 `.golangci.yml`。 |
+| 静态检查 | `go vet` / `staticcheck`。 |
 | 测试 | `go test -race -cover ./...`。 |
-| 漏洞扫描 | [`govulncheck ./...`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)。 |
-| 构建 | `go build`；交叉编译用 `GOOS`/`GOARCH`；发布可配 [`goreleaser`](https://github.com/goreleaser/goreleaser)。 |
+| 漏洞扫描 | `govulncheck ./...`。 |
+| 构建 | `go build`；交叉编译用 `GOOS`/`GOARCH`；发布可配 `goreleaser`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 对暂存 Go 文件跑 `gofmt`/`goimports` 校验；CI 跑全项目 `go vet`、`staticcheck`、`golangci-lint run`、`go test -race -cover ./...` 与 `govulncheck ./...`。
+- pre-commit 用 `lefthook` 对暂存 Go 文件跑 `gofmt`/`goimports` 校验；CI 跑全项目 `go vet`、`staticcheck`、`golangci-lint run`、`go test -race -cover ./...` 与 `govulncheck ./...`。

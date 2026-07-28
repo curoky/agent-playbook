@@ -59,7 +59,7 @@ alwaysApply: false
 ## 5. 安全与日志
 
 - 外部输入用 `Codable` + 校验后再进内部类型；按输出上下文转义。
-- SQL 用参数化占位符（`GRDB`/`PostgresNIO`）；禁止拼接 SQL。子进程用 async-native [`swift-subprocess`](https://github.com/swiftlang/swift-subprocess) 的 `run(_:arguments:)`（参数数组），不经 shell 拼接、不再用冗长的 `Foundation.Process`。
+- SQL 用参数化占位符（`GRDB`/`PostgresNIO`）；禁止拼接 SQL。子进程用 async-native `swift-subprocess` 的 `run(_:arguments:)`（参数数组），不经 shell 拼接、不再用冗长的 `Foundation.Process`。
 - 加密用 `CryptoKit`（macOS 原生）；随机数/令牌用 `SystemRandomNumberGenerator` 或 CSPRNG，不自行拼凑；密钥用 Keychain，不硬编码。
 - 密码哈希用 `argon2`/`bcrypt`；不自行实现加密原语。
 - 日志用 `swift-log`（`Logger`）结构化输出；`print` 只作临时调试，提交前清理。
@@ -75,29 +75,29 @@ alwaysApply: false
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| 包管理/构建 | [`SwiftPM`](https://www.swift.org/package-manager/) | 必须；`Package.swift` 声明真实目标平台，leaf 项目提交 `Package.resolved`；大型多 target/多模块 Apple 工程按需配 [`Tuist`](https://github.com/tuist/tuist)。 |
-| CLI 参数 | [`swift-argument-parser`](https://github.com/apple/swift-argument-parser) | 必须。 |
-| 日志 | [`swift-log`](https://github.com/apple/swift-log) | 必须；结构化 `Logger`。 |
-| JSON | 标准库 [`Codable`](https://developer.apple.com/documentation/swift/codable) | 必须；`JSONEncoder`/`JSONDecoder`。 |
-| HTTP 服务 | [`Vapor`](https://github.com/vapor/vapor) / [`Hummingbird`](https://github.com/hummingbird-project/hummingbird) | 全功能生态用 Vapor 4；轻量/可组合用 Hummingbird 2。 |
-| HTTP 客户端 | [`URLSession`](https://developer.apple.com/documentation/foundation/urlsession) / [`async-http-client`](https://github.com/swift-server/async-http-client) | macOS 客户端默认 `URLSession`（async/await）；服务端高吞吐用 `async-http-client`。 |
-| 子进程 | [`swift-subprocess`](https://github.com/swiftlang/swift-subprocess) | 必须；async-native，替代 `Foundation.Process`。 |
-| 底层网络 | [`SwiftNIO`](https://github.com/apple/swift-nio) | 按需；高性能异步 I/O 基座。 |
-| SQLite | [`GRDB`](https://github.com/groue/GRDB.swift) | 嵌入式 SQLite。 |
-| PostgreSQL | [`PostgresNIO`](https://github.com/vapor/postgres-nio) | 服务端；Vapor 全栈用 [`Fluent`](https://github.com/vapor/fluent)。 |
-| Apple 端持久化 | [`SwiftData`](https://developer.apple.com/documentation/swiftdata) | 新项目默认；存量用 Core Data。 |
-| 加密 | [`CryptoKit`](https://developer.apple.com/documentation/cryptokit) | macOS 原生默认；确需跨平台移植时用 [`swift-crypto`](https://github.com/apple/swift-crypto)（API 一致）。 |
-| 集合扩展 | [`swift-collections`](https://github.com/apple/swift-collections) | 按需；`Deque`/`OrderedSet`/`Heap`。 |
-| 算法 | [`swift-algorithms`](https://github.com/apple/swift-algorithms) | 按需。 |
-| 数值 | [`swift-numerics`](https://github.com/apple/swift-numerics) | 按需。 |
-| 异步序列 | [`swift-async-algorithms`](https://github.com/apple/swift-async-algorithms) | 按需；`AsyncSequence` 补充。 |
-| 依赖注入 | 手动注入 / [`swift-dependencies`](https://github.com/pointfreeco/swift-dependencies) | 小中型手动；需统一注册/覆盖用 `swift-dependencies`。 |
-| Redis | [`RediStack`](https://github.com/swift-server/RediStack) | 按需。 |
-| gRPC | [`grpc-swift-2`](https://github.com/grpc/grpc-swift-2) | 必须；新项目用当前 v2；`grpc-swift` v1 仅存量维护。 |
-| macOS 端 UI | [`SwiftUI`](https://developer.apple.com/documentation/swiftui) + [`Observation`](https://developer.apple.com/documentation/observation) | 新界面默认；状态用 `@Observable` 宏（配 `@State`/`@Bindable`），不用 `ObservableObject`；需要 SwiftUI 未覆盖的能力时下沉 AppKit。 |
-| 测试 | [`swift-testing`](https://github.com/swiftlang/swift-testing) | 必须；XCTest 用于存量与专有能力。 |
-| Lint | [`SwiftLint`](https://github.com/realm/SwiftLint) | 必须；配置 `.swiftlint.yml`。 |
-| 格式化 | [`swift-format`](https://github.com/swiftlang/swift-format) / [`SwiftFormat`](https://github.com/nicklockwood/SwiftFormat) | 二选一；官方工具链一致性优先 `swift-format`。 |
+| 包管理/构建 | `SwiftPM` | 必须；`Package.swift` 声明真实目标平台，leaf 项目提交 `Package.resolved`；大型多 target/多模块 Apple 工程按需配 `Tuist`。 |
+| CLI 参数 | `swift-argument-parser` | 必须。 |
+| 日志 | `swift-log` | 必须；结构化 `Logger`。 |
+| JSON | 标准库 `Codable` | 必须；`JSONEncoder`/`JSONDecoder`。 |
+| HTTP 服务 | `Vapor` / `Hummingbird` | 全功能生态用 Vapor 4；轻量/可组合用 Hummingbird 2。 |
+| HTTP 客户端 | `URLSession` / `async-http-client` | macOS 客户端默认 `URLSession`（async/await）；服务端高吞吐用 `async-http-client`。 |
+| 子进程 | `swift-subprocess` | 必须；async-native，替代 `Foundation.Process`。 |
+| 底层网络 | `SwiftNIO` | 按需；高性能异步 I/O 基座。 |
+| SQLite | `GRDB` | 嵌入式 SQLite。 |
+| PostgreSQL | `PostgresNIO` | 服务端；Vapor 全栈用 `Fluent`。 |
+| Apple 端持久化 | `SwiftData` | 新项目默认；存量用 Core Data。 |
+| 加密 | `CryptoKit` | macOS 原生默认；确需跨平台移植时用 `swift-crypto`（API 一致）。 |
+| 集合扩展 | `swift-collections` | 按需；`Deque`/`OrderedSet`/`Heap`。 |
+| 算法 | `swift-algorithms` | 按需。 |
+| 数值 | `swift-numerics` | 按需。 |
+| 异步序列 | `swift-async-algorithms` | 按需；`AsyncSequence` 补充。 |
+| 依赖注入 | 手动注入 / `swift-dependencies` | 小中型手动；需统一注册/覆盖用 `swift-dependencies`。 |
+| Redis | `RediStack` | 按需。 |
+| gRPC | `grpc-swift-2` | 必须；新项目用当前 v2；`grpc-swift` v1 仅存量维护。 |
+| macOS 端 UI | `SwiftUI` + `Observation` | 新界面默认；状态用 `@Observable` 宏（配 `@State`/`@Bindable`），不用 `ObservableObject`；需要 SwiftUI 未覆盖的能力时下沉 AppKit。 |
+| 测试 | `swift-testing` | 必须；XCTest 用于存量与专有能力。 |
+| Lint | `SwiftLint` | 必须；配置 `.swiftlint.yml`。 |
+| 格式化 | `swift-format` / `SwiftFormat` | 二选一；官方工具链一致性优先 `swift-format`。 |
 
 ## 7. 语言构造选择
 
@@ -110,10 +110,10 @@ alwaysApply: false
 
 | 用途 | 工具 |
 | --- | --- |
-| 包/依赖/版本 | [`SwiftPM`](https://www.swift.org/package-manager/)，`Package.swift` 声明 `swift-tools-version:6.3` 与真实目标平台；`.swift-version` 锁 6.3.2；leaf 项目提交 `Package.resolved`；`swift build`/`swift run`。 |
-| 格式化 | [`swift-format`](https://github.com/swiftlang/swift-format) / [`SwiftFormat`](https://github.com/nicklockwood/SwiftFormat)。 |
-| Lint | [`SwiftLint`](https://github.com/realm/SwiftLint)，配置 `.swiftlint.yml`。 |
-| 测试/覆盖率 | `swift test --enable-code-coverage`；[`swift-testing`](https://github.com/swiftlang/swift-testing)。 |
+| 包/依赖/版本 | `SwiftPM`，`Package.swift` 声明 `swift-tools-version:6.3` 与真实目标平台；`.swift-version` 锁 6.3.2；leaf 项目提交 `Package.resolved`；`swift build`/`swift run`。 |
+| 格式化 | `swift-format` / `SwiftFormat`。 |
+| Lint | `SwiftLint`，配置 `.swiftlint.yml`。 |
+| 测试/覆盖率 | `swift test --enable-code-coverage`；`swift-testing`。 |
 | 构建 | `swift build`（发布配 `-c release`）；带 Apple UI/资源的 app 用匹配当前 Swift toolchain 的 Xcode `xcodebuild`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 对暂存 `*.swift` 跑 `swift-format`/`SwiftFormat` 与 `SwiftLint`；CI 对全项目重复格式/Lint，并运行 `swift build`、`swift test`。
+- pre-commit 用 `lefthook` 对暂存 `*.swift` 跑 `swift-format`/`SwiftFormat` 与 `SwiftLint`；CI 对全项目重复格式/Lint，并运行 `swift build`、`swift test`。

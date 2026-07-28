@@ -45,7 +45,7 @@ alwaysApply: false
 
 - 文件头写脚本用途、`Usage:`、外部命令依赖、shell dialect；Bash 脚本另写最低版本。
 - 非平凡函数注释入参、全局副作用、返回约定；注释写意图，不复述命令。
-- 测试用 [`bats-core`](https://github.com/bats-core/bats-core)；可测逻辑拆成函数后在测试中 `source`。
+- 测试用 `bats-core`；可测逻辑拆成函数后在测试中 `source`。
 - `shellcheck` 零告警是最低门槛。
 - 测试用 `mktemp -d`，通过 `PATH` 前置桩 mock 外部命令；不依赖真实网络/全局状态。
 
@@ -63,8 +63,8 @@ alwaysApply: false
 
 | 用途 | 工具 |
 | --- | --- |
-| 格式化 | [`shfmt`](https://github.com/mvdan/sh)，如 `shfmt -i 2 -ci`。 |
-| Lint/静态分析 | [`shellcheck`](https://github.com/koalaman/shellcheck)，CI 零告警。 |
-| 测试 | [`bats-core`](https://github.com/bats-core/bats-core)，可配 `bats-assert`/`bats-support`。 |
+| 格式化 | `shfmt`，如 `shfmt -i 2 -ci`。 |
+| Lint/静态分析 | `shellcheck`，CI 零告警。 |
+| 测试 | `bats-core`，可配 `bats-assert`/`bats-support`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook)：对暂存 `*.sh`/`*.bash` 跑 `shfmt -d` 或 `-l`、`shellcheck`；CI 重复执行并运行 `bats`。
+- pre-commit 用 `lefthook`：对暂存 `*.sh`/`*.bash` 跑 `shfmt -d` 或 `-l`、`shellcheck`；CI 重复执行并运行 `bats`。

@@ -68,40 +68,40 @@ alwaysApply: false
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| 路径 | [`pathe`](https://github.com/unjs/pathe) | 必须；跨平台路径一致。 |
-| 错误结果 | [`neverthrow`](https://github.com/supermacro/neverthrow) | 按需；希望错误进入类型系统时用，否则用原生 `try/catch` + 保留 `cause`。 |
-| 日期/时间 | [`Temporal`](https://github.com/tc39/proposal-temporal) | 时区/跨日历/时长运算用；运行时缺失用 `@js-temporal/polyfill`；展示格式化/相对时间用 [`date-fns`](https://github.com/date-fns/date-fns)，既有 `dayjs` 可沿用。 |
-| Schema | [`zod`](https://github.com/colinhacks/zod) | 必须；前端 bundle 是硬约束且校验简单时用 [`valibot`](https://github.com/fabian-hiller/valibot)。 |
-| HTTP | [`ofetch`](https://github.com/unjs/ofetch) | 按需；需要自动解析、错误处理、重试时用。 |
-| CLI | [`commander`](https://github.com/tj/commander.js) / [`citty`](https://github.com/unjs/citty) | 必须；通用选 `commander`，unjs/极简选 `citty`。 |
-| 环境变量 | [`dotenv`](https://github.com/motdotla/dotenv) | 按需；Node 20.6+ 可用 `--env-file`，仍配 `zod` 校验。 |
-| 工具函数 | [`es-toolkit`](https://github.com/toss/es-toolkit) | 按需；替代 lodash。 |
-| 测试 | [`vitest`](https://github.com/vitest-dev/vitest) | 必须；纯 Node 库可用 `node:test`。 |
-| 日志 | [`pino`](https://github.com/pinojs/pino) | 按需；结构化 JSON。 |
-| ID | [`crypto.randomUUID()`](https://nodejs.org/api/crypto.html) / [`nanoid`](https://github.com/ai/nanoid) | 标准 UUID 用内置；短 URL 友好 ID 用 `nanoid`。 |
-| 数据库/ORM | [`drizzle-orm`](https://github.com/drizzle-team/drizzle-orm) + `drizzle-kit` | 必须；TS 原生、类型安全、迁移配套。 |
-| Glob | [`tinyglobby`](https://github.com/SuperchupuDev/tinyglobby) | 按需；替代 `glob`/`fast-glob`。 |
-| Lint/格式化 | [`biome`](https://github.com/biomejs/biome) | 必须；需丰富插件规则时 Lint 可用 `eslint` flat config，format 仍用 `biome`。 |
-| 子进程 | [`execa`](https://github.com/sindresorhus/execa) | 按需；简单一次性命令可用 `node:child_process`。 |
-| 终端输出 | [`picocolors`](https://github.com/alexeyraspopov/picocolors) / [`ora`](https://github.com/sindresorhus/ora) | 按需；着色/加载动画。 |
-| 并发限流 | [`p-limit`](https://github.com/sindresorhus/p-limit) | 按需。 |
-| Web 框架 | [`hono`](https://github.com/honojs/hono) / [`fastify`](https://github.com/fastify/fastify) | 必须；边缘/多运行时选 `hono`，Node 高吞吐/schema 驱动选 `fastify`，维护老项目才用 `express`。 |
-| 前端数据缓存 | [`@tanstack/query`](https://github.com/TanStack/query) | 必须；服务端状态缓存、重试、失效。 |
-| React UI | [`Radix Themes`](https://github.com/radix-ui/themes) | 按需；需组件源码入仓选 `shadcn/ui`（接受升级靠 copy/diff）。 |
-| 前端状态 | [`zustand`](https://github.com/pmndrs/zustand) | 按需；复杂数据流再考虑 `redux-toolkit`。 |
-| 队列 | [`bullmq`](https://github.com/taskforcesh/bullmq) | 必须；Redis 可靠任务队列。 |
-| WebSocket | [`ws`](https://github.com/websockets/ws) | 按需；需房间/降级用 `socket.io`。 |
-| 加密/哈希 | [`node:crypto`](https://nodejs.org/api/crypto.html) / `@node-rs/argon2` | 标准库优先；密码哈希用 `scrypt`/`argon2`。 |
+| 路径 | `pathe` | 必须；跨平台路径一致。 |
+| 错误结果 | `neverthrow` | 按需；希望错误进入类型系统时用，否则用原生 `try/catch` + 保留 `cause`。 |
+| 日期/时间 | `Temporal` | 时区/跨日历/时长运算用；运行时缺失用 `@js-temporal/polyfill`；展示格式化/相对时间用 `date-fns`，既有 `dayjs` 可沿用。 |
+| Schema | `zod` | 必须；前端 bundle 是硬约束且校验简单时用 `valibot`。 |
+| HTTP | `ofetch` | 按需；需要自动解析、错误处理、重试时用。 |
+| CLI | `commander` / `citty` | 必须；通用选 `commander`，unjs/极简选 `citty`。 |
+| 环境变量 | `dotenv` | 按需；Node 20.6+ 可用 `--env-file`，仍配 `zod` 校验。 |
+| 工具函数 | `es-toolkit` | 按需；替代 lodash。 |
+| 测试 | `vitest` | 必须；纯 Node 库可用 `node:test`。 |
+| 日志 | `pino` | 按需；结构化 JSON。 |
+| ID | `crypto.randomUUID()` / `nanoid` | 标准 UUID 用内置；短 URL 友好 ID 用 `nanoid`。 |
+| 数据库/ORM | `drizzle-orm` + `drizzle-kit` | 必须；TS 原生、类型安全、迁移配套。 |
+| Glob | `tinyglobby` | 按需；替代 `glob`/`fast-glob`。 |
+| Lint/格式化 | `biome` | 必须；需丰富插件规则时 Lint 可用 `eslint` flat config，format 仍用 `biome`。 |
+| 子进程 | `execa` | 按需；简单一次性命令可用 `node:child_process`。 |
+| 终端输出 | `picocolors` / `ora` | 按需；着色/加载动画。 |
+| 并发限流 | `p-limit` | 按需。 |
+| Web 框架 | `hono` / `fastify` | 必须；边缘/多运行时选 `hono`，Node 高吞吐/schema 驱动选 `fastify`，维护老项目才用 `express`。 |
+| 前端数据缓存 | `@tanstack/query` | 必须；服务端状态缓存、重试、失效。 |
+| React UI | `Radix Themes` | 按需；需组件源码入仓选 `shadcn/ui`（接受升级靠 copy/diff）。 |
+| 前端状态 | `zustand` | 按需；复杂数据流再考虑 `redux-toolkit`。 |
+| 队列 | `bullmq` | 必须；Redis 可靠任务队列。 |
+| WebSocket | `ws` | 按需；需房间/降级用 `socket.io`。 |
+| 加密/哈希 | `node:crypto` / `@node-rs/argon2` | 标准库优先；密码哈希用 `scrypt`/`argon2`。 |
 
 ## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |
-| 包管理 | [`pnpm`](https://github.com/pnpm/pnpm)，提交 `pnpm-lock.yaml`。 |
-| Lint/格式化 | [`biome`](https://github.com/biomejs/biome)，配置 `biome.json`。 |
+| 包管理 | `pnpm`，提交 `pnpm-lock.yaml`。 |
+| Lint/格式化 | `biome`，配置 `biome.json`。 |
 | 类型检查 | `tsc --noEmit`，`strict: true`。 |
-| 测试 | [`vitest`](https://github.com/vitest-dev/vitest)。 |
-| 构建/打包 | [`tsdown`](https://github.com/rolldown/tsdown)；应用用框架构建；存量 `tsup` 项目按官方迁移指南升级。 |
-| 直接运行 TS | [`tsx`](https://github.com/privatenumber/tsx)。 |
+| 测试 | `vitest`。 |
+| 构建/打包 | `tsdown`；应用用框架构建；存量 `tsup` 项目按官方迁移指南升级。 |
+| 直接运行 TS | `tsx`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 跑 `biome check --staged`；CI 跑全项目 `biome ci`、`tsc --noEmit`、`vitest` 与构建。
+- pre-commit 用 `lefthook` 跑 `biome check --staged`；CI 跑全项目 `biome ci`、`tsc --noEmit`、`vitest` 与构建。

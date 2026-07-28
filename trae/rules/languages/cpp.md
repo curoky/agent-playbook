@@ -71,39 +71,39 @@ alwaysApply: false
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
-| 构建/包管理 | [`Bazel`](https://bazel.build/) bzlmod | 必须；优先 Bazel Central Registry，未收录用 `git_override`/`http_archive`。 |
-| 单元测试 | [`Catch2`](https://github.com/catchorg/Catch2) | 必须；mock 配 [`trompeloeil`](https://github.com/rollbear/trompeloeil)。 |
-| 基准测试 | [`google/benchmark`](https://github.com/google/benchmark) | 按需。 |
-| 格式化/输出 | [`fmt`](https://github.com/fmtlib/fmt) | 必须；默认 `fmt::format`/`fmt::print`。 |
-| 日志 | [`spdlog`](https://github.com/gabime/spdlog) | 必须；基于 `fmt`。 |
-| JSON | [`nlohmann/json`](https://github.com/nlohmann/json) / [`glaze`](https://github.com/stephenberry/glaze) | 默认 `nlohmann/json`；性能热点且结构体已知用 `glaze`。 |
-| HTTP 客户端 | [`cpr`](https://github.com/libcpr/cpr) | 必须；基于 libcurl。 |
-| HTTP/网络服务 | [`Boost.Asio`](https://github.com/boostorg/asio) / [`Drogon`](https://github.com/drogonframework/drogon) | 底层 TCP/UDP/协程异步用 Asio；完整 Web 框架用 Drogon。 |
-| CLI | [`CLI11`](https://github.com/CLIUtils/CLI11) | 必须。 |
-| 配置 | [`toml++`](https://github.com/marzer/tomlplusplus) / [`yaml-cpp`](https://github.com/jbeder/yaml-cpp) | TOML/YAML；JSON 配置复用 `nlohmann/json`。 |
-| 错误结果 | `std::expected` / [`tl::expected`](https://github.com/TartanLlama/expected) | 可预期失败用；C++23 用标准库，C++20 用 `tl::expected`；不可恢复才异常，避免 `int` 返回 + out 参数。 |
-| 通用补全 | [`abseil`](https://github.com/abseil/abseil-cpp) | 按需；标准库缺口时用。 |
-| 高性能基础库 | [`folly`](https://github.com/facebook/folly) | 按需；高并发服务端确需其能力时用。 |
-| 异步网络框架 | [`wangle`](https://github.com/facebook/wangle) | 按需；依赖 `folly`。 |
-| Thrift RPC | [`fbthrift`](https://github.com/facebook/fbthrift) | 按需；既有 Thrift/Facebook 生态。 |
-| gRPC | [`grpc`](https://github.com/grpc/grpc) | 必须；新建跨语言服务默认。 |
-| SQLite | [`sqlite_orm`](https://github.com/fnc12/sqlite_orm) / [`SQLiteCpp`](https://github.com/SRombauts/SQLiteCpp) | 嵌入式 SQLite；服务端 DB 用厂商官方驱动。 |
-| 加密 | [`libsodium`](https://github.com/jedisct1/libsodium) / OpenSSL | 新代码优先 `libsodium`；TLS/X.509/既有 OpenSSL 生态用 OpenSSL；不自行实现加密原语。 |
-| 协程补全 | 标准库 `<coroutine>` / [`Boost.Asio`](https://github.com/boostorg/asio) | 同步生成器优先标准库，异步 I/O 用 Asio coroutine；不在新项目引入基于旧 Coroutines TS 的实验性 `cppcoro`。 |
-| 数值/线代 | [`Eigen`](https://gitlab.com/libeigen/eigen) | 按需。 |
-| Boost | [`Boost`](https://github.com/boostorg/boost) | 按需；只依赖用到的子库。 |
+| 构建/包管理 | `Bazel` bzlmod | 必须；优先 Bazel Central Registry，未收录用 `git_override`/`http_archive`。 |
+| 单元测试 | `Catch2` | 必须；mock 配 `trompeloeil`。 |
+| 基准测试 | `google/benchmark` | 按需。 |
+| 格式化/输出 | `fmt` | 必须；默认 `fmt::format`/`fmt::print`。 |
+| 日志 | `spdlog` | 必须；基于 `fmt`。 |
+| JSON | `nlohmann/json` / `glaze` | 默认 `nlohmann/json`；性能热点且结构体已知用 `glaze`。 |
+| HTTP 客户端 | `cpr` | 必须；基于 libcurl。 |
+| HTTP/网络服务 | `Boost.Asio` / `Drogon` | 底层 TCP/UDP/协程异步用 Asio；完整 Web 框架用 Drogon。 |
+| CLI | `CLI11` | 必须。 |
+| 配置 | `toml++` / `yaml-cpp` | TOML/YAML；JSON 配置复用 `nlohmann/json`。 |
+| 错误结果 | `std::expected` / `tl::expected` | 可预期失败用；C++23 用标准库，C++20 用 `tl::expected`；不可恢复才异常，避免 `int` 返回 + out 参数。 |
+| 通用补全 | `abseil` | 按需；标准库缺口时用。 |
+| 高性能基础库 | `folly` | 按需；高并发服务端确需其能力时用。 |
+| 异步网络框架 | `wangle` | 按需；依赖 `folly`。 |
+| Thrift RPC | `fbthrift` | 按需；既有 Thrift/Facebook 生态。 |
+| gRPC | `grpc` | 必须；新建跨语言服务默认。 |
+| SQLite | `sqlite_orm` / `SQLiteCpp` | 嵌入式 SQLite；服务端 DB 用厂商官方驱动。 |
+| 加密 | `libsodium` / OpenSSL | 新代码优先 `libsodium`；TLS/X.509/既有 OpenSSL 生态用 OpenSSL；不自行实现加密原语。 |
+| 协程补全 | 标准库 `<coroutine>` / `Boost.Asio` | 同步生成器优先标准库，异步 I/O 用 Asio coroutine；不在新项目引入基于旧 Coroutines TS 的实验性 `cppcoro`。 |
+| 数值/线代 | `Eigen` | 按需。 |
+| Boost | `Boost` | 按需；只依赖用到的子库。 |
 
 ## 7. 工具链
 
 | 用途 | 工具 |
 | --- | --- |
-| 构建 | [`Bazel`](https://bazel.build/) bzlmod；`BUILD.bazel` 声明 target，`.bazelversion` 固定版本，`.bazelrc` 固定 C++ 标准。 |
+| 构建 | `Bazel` bzlmod；`BUILD.bazel` 声明 target，`.bazelversion` 固定版本，`.bazelrc` 固定 C++ 标准。 |
 | 依赖 | `MODULE.bazel` + `MODULE.bazel.lock`；BCR 优先，未收录用 `git_override`/`http_archive`。 |
-| 格式化 | [`clang-format`](https://clang.llvm.org/docs/ClangFormat.html)，提交 `.clang-format`。 |
-| 静态分析 | [`clang-tidy`](https://clang.llvm.org/extra/clang-tidy/)，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines`。 |
+| 格式化 | `clang-format`，提交 `.clang-format`。 |
+| 静态分析 | `clang-tidy`，启用 `bugprone`/`performance`/`modernize`/`cppcoreguidelines`。 |
 | 编译警告 | `.bazelrc` 配 `-Wall -Wextra -Wpedantic`，按需 `-Werror`；MSVC 用 `/W4 /WX`。 |
 | Sanitizers | `.bazelrc` 预置 `--config=asan`/`--config=ubsan`，必要时 TSan。 |
-| 测试/覆盖率 | [`Catch2`](https://github.com/catchorg/Catch2)，`bazel test //...`；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
-| 基准 | [`google/benchmark`](https://github.com/google/benchmark)。 |
+| 测试/覆盖率 | `Catch2`，`bazel test //...`；覆盖率用 `bazel coverage` + `llvm-cov`/`gcov`。 |
+| 基准 | `google/benchmark`。 |
 
-- pre-commit 用 [`lefthook`](https://github.com/evilmartians/lefthook) 对暂存 C++ 文件跑 `clang-format --dry-run -Werror`；CI 跑全项目 `clang-tidy`、`bazel build //...`、`bazel test //...` 与配置化 Sanitizers。
+- pre-commit 用 `lefthook` 对暂存 C++ 文件跑 `clang-format --dry-run -Werror`；CI 跑全项目 `clang-tidy`、`bazel build //...`、`bazel test //...` 与配置化 Sanitizers。

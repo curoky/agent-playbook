@@ -33,7 +33,7 @@ alwaysApply: false
 
 - **工具选型偏好**：优先选速度快、配置少、能合并多职责的工具（如 `biome`、`ruff` 一体化 Lint + 格式化）。
 - **配置与锁文件入库**：项目的配置文件与锁文件必须提交，保证依赖可复现；具体文件名清单见各语言规范的版本/工具链相关章节。
-- **git hook 统一用 [`lefthook`](https://github.com/evilmartians/lefthook) 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤（`{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile；`pre-commit` 只跑可按暂存文件执行的 format/lint 等秒级检查，`pre-push` 可按项目规模运行类型检查和测试，`commit-msg` 挂 `commitlint`（见 §5）。
+- **git hook 统一用 `lefthook` 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤（`{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile；`pre-commit` 只跑可按暂存文件执行的 format/lint 等秒级检查，`pre-push` 可按项目规模运行类型检查和测试，`commit-msg` 挂 `commitlint`（见 §5）。
 - **完整检查可一键运行**：提供一个项目级命令串起格式校验、Lint/静态分析、类型检查/vet、测试与构建；本地可主动运行，CI 强制执行。
 - **复用入口而非强求同一范围**：pre-commit、pre-push、CI 调用同一组底层脚本和配置，但按耗时与检查粒度取子集；项目级类型检查、测试、构建与漏洞扫描不得伪装成 staged-file 检查。
 
@@ -71,14 +71,14 @@ alwaysApply: false
 
 ## 5. 提交规范（接线）
 
-**核心原则**：提交遵循 [Conventional Commits](https://www.conventionalcommits.org/)，使历史可读、可机器解析，并驱动版本与 changelog。提交信息「怎么写」的完整格式见 `git-commit-message.md`；本节只讲工具接线。
+**核心原则**：提交遵循 Conventional Commits，使历史可读、可机器解析，并驱动版本与 changelog。提交信息「怎么写」的完整格式见 `git-commit-message.md`；本节只讲工具接线。
 
-- 用 [`commitlint`](https://github.com/conventional-changelog/commitlint) 强制校验（在 `lefthook.yml` 的 `commit-msg` 钩子中挂载）；交互式提交可用 [`commitizen`](https://github.com/commitizen/cz-cli)。
+- 用 `commitlint` 强制校验（在 `lefthook.yml` 的 `commit-msg` 钩子中挂载）；交互式提交可用 `commitizen`。
 - 提交历史由 Conventional Commits 驱动版本推导（§6）与 changelog 自动生成（§7）。
 
 ## 6. 语义化版本（SemVer）
 
-**核心原则**：版本号遵循 [SemVer 2.0.0](https://semver.org/)：`MAJOR.MINOR.PATCH`。
+**核心原则**：版本号遵循 SemVer 2.0.0：`MAJOR.MINOR.PATCH`。
 
 - **MAJOR** 破坏性变更、**MINOR** 向后兼容新功能、**PATCH** 向后兼容修复；预发布用 `-alpha`/`-beta`/`-rc`。
 - **由 Conventional Commits 自动推导**：`feat` → minor、`fix` → patch、`!`/`BREAKING CHANGE` → major；不手动随意 bump。
@@ -87,10 +87,10 @@ alwaysApply: false
 
 ## 7. 变更日志（Changelog）
 
-**核心原则**：维护面向使用者的 `CHANGELOG.md`，遵循 [Keep a Changelog](https://keepachangelog.com/)。
+**核心原则**：维护面向使用者的 `CHANGELOG.md`，遵循 Keep a Changelog。
 
 - 按版本分组，分类列出 `Added`/`Changed`/`Fixed`/`Deprecated`/`Removed`/`Security` 并标注日期。
-- 由 Conventional Commits **自动生成**：JS/TS 用 [`changesets`](https://github.com/changesets/changesets)（推荐，适合 monorepo）或 `release-please`；Python 用 [`towncrier`](https://github.com/twisted/towncrier) 或 `git-cliff`。
+- 由 Conventional Commits **自动生成**：JS/TS 用 `changesets`（推荐，适合 monorepo）或 `release-please`；Python 用 `towncrier` 或 `git-cliff`。
 - 破坏性变更须显著标注并说明迁移方式。
 
 ## 8. 依赖治理
@@ -104,7 +104,7 @@ alwaysApply: false
 
 **自动升级**：
 
-- **工具**：统一用 [Renovate](https://github.com/renovatebot/renovate)（跨生态）；纯 GitHub 仓库可用 Dependabot；配置入库。
+- **工具**：统一用 Renovate（跨生态）；纯 GitHub 仓库可用 Dependabot；配置入库。
 - **调度**：每周固定窗口批量提 PR（`schedule`），设并发上限（`prConcurrentLimit`）避免 PR 风暴。
 - **分级合并**：`patch`/`devDependencies` CI 通过后自动合并；生产 `minor` 至少 1 人评审；`major`/破坏性必须人工评审 + 迁移说明 + 回归。
 - **聚合降噪**：非主要版本按生态分组（`groupName`）；锁文件维护（`lockFileMaintenance`）每周单独跑。
@@ -113,7 +113,7 @@ alwaysApply: false
 
 **安全审计**：
 
-- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断。JS/TS 用 `pnpm audit --audit-level=high`（或 `osv-scanner`），Python 用 [`pip-audit`](https://github.com/pypa/pip-audit)（或 `osv-scanner`），Go 用 [`govulncheck ./...`](https://pkg.go.dev/golang.org/x/vuln/cmd/govulncheck)（或 `osv-scanner`），C++ 用 [`osv-scanner`](https://github.com/google/osv-scanner) 扫 `MODULE.bazel.lock`。
+- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断。JS/TS 用 `pnpm audit --audit-level=high`（或 `osv-scanner`），Python 用 `pip-audit`（或 `osv-scanner`），Go 用 `govulncheck ./...`（或 `osv-scanner`），C++ 用 `osv-scanner` 扫 `MODULE.bazel.lock`。
 - **阻断阈值**：`high` 及以上（CVSS ≥ 7.0）须修复或显式豁免；`moderate` 及以下记录跟踪。
 - **修复 SLA**：`critical` 24h、`high` 7d、`moderate` 30d 内处理。
 - **豁免机制**：无法立即修复时登记白名单（`pip-audit --ignore-vuln`、`pnpm` overrides），注明原因/责任人/复审日期，并经评审。
