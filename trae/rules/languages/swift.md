@@ -8,9 +8,9 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 新项目使用官方最新稳定 Swift（截至 2026-07 为 6.3.2），不默认使用 development snapshot；用 `.swift-version` / Swiftly 或 Xcode toolchain 选择锁定具体版本。
+- 新项目使用官方最新稳定 Swift（落地时查官方发布页核实），不默认使用 development snapshot；用 `.swift-version` / Swiftly 或 Xcode toolchain 选择锁定具体版本。
 - 启用 Swift 6 language mode，strict concurrency 设为 `complete`，把数据竞争拦在编译期；开启 opt-in strict memory safety 标记不安全构造。
-- 用 Swift Package Manager；`Package.swift` 声明 `swift-tools-version:6.3`。仅按实际目标声明 Apple / Linux / Windows / Wasm / Android 平台约束，不把通用 Swift package 强制限定为 macOS。
+- 用 Swift Package Manager；`Package.swift` 声明与所用 toolchain 匹配的 `swift-tools-version`。仅按实际目标声明 Apple / Linux / Windows / Wasm / Android 平台约束，不把通用 Swift package 强制限定为 macOS。
 - leaf app / executable 提交 `Package.resolved` 保证部署可复现；library 可为自身 CI 提交，但明确它不会锁定下游消费者的依赖解析。
 - 值语义优先：`struct`/`enum` 优先于 `class`，默认 `let` 而非 `var`；现代语法优先：`async`/`await`、`actor`、结构化并发、`guard let`/`if let` 简写解包、`some`/`any`、`Result`、typed `throws`、`Codable`、Regex 字面量、result builder、尾随闭包；性能敏感路径用 `InlineArray`（`[N of T]`）与 `Span`/`RawSpan`；可读性优先。
 - 禁止：强制解包 `!` 与隐式解包可选（测试/明确不变量除外）、`as!` 强制转型、`try!`（测试除外）、用 `fatalError`/`preconditionFailure` 处理可预期错误、无理由的 `@unchecked Sendable`、保留循环引用（用 `weak`/`unowned`）。
@@ -37,9 +37,9 @@ alwaysApply: false
 
 ## 3. 并发
 
-- 用 Swift 6.3 Approachable Concurrency（SPM 无单一开关，需在 target `swiftSettings` 显式接线）：
+- 用当前 Swift 的 Approachable Concurrency（SPM 无单一开关，需在 target `swiftSettings` 显式接线）：
   - UI/可执行 target 配 `.defaultIsolation(MainActor.self)`，默认单线程主 actor 隔离，减少 `@MainActor` 标注；这是独立旋钮，与下面的 upcoming feature 分开。
-  - 已用 `swiftLanguageModes: [.v6]` 时，再开两个 6.2 新特性：`.enableUpcomingFeature("NonisolatedNonsendingByDefault")`（SE-0461，`nonisolated async` 继承调用方上下文）与 `.enableUpcomingFeature("InferIsolatedConformances")`（SE-0470）；另外 3 个 flag 已随 v6 语言模式默认开启。
+  - 已用 `swiftLanguageModes: [.v6]` 时，再开尚未随 v6 默认启用的 upcoming feature：`.enableUpcomingFeature("NonisolatedNonsendingByDefault")`（SE-0461，`nonisolated async` 继承调用方上下文）与 `.enableUpcomingFeature("InferIsolatedConformances")`（SE-0470）。
 - 需要真正并行、脱离当前 actor 到并发线程池的部分，显式标 `@concurrent`；否则 `async` 默认留在调用方上下文，避免无谓的 actor 跳变。
 - 统一 `async`/`await` + 结构化并发；不混用回调/completion handler（桥接旧 API 用 `withCheckedContinuation`/`withCheckedThrowingContinuation`）。
 - 共享可变状态用 `actor` 隔离；跨隔离域传值必须 `Sendable`，`@Sendable` 闭包禁止捕获可变引用。
@@ -69,9 +69,7 @@ alwaysApply: false
 ## 6. 库选型
 
 - 标准库/Foundation 够用时不引第三方；先确认 `Codable`、`URLSession`、`swift-collections`、`Foundation` 是否够用。
-- 选现代、主流、积极维护的库：SwiftPM 支持、`Sendable`/并发友好、生产验证充分；不确定时核实发布时间与活跃度。
-- 高风险依赖（久未维护、star 少、小众）先说明维护/安全/替代风险并确认。
-- 优先 swiftlang / swift-server / Apple / Point-Free 等主流生态；体积/依赖复杂度只在多个合格候选间加权。
+- 优先 swiftlang / swift-server / Apple / Point-Free 等主流生态。
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |
@@ -110,7 +108,7 @@ alwaysApply: false
 
 | 用途 | 工具 |
 | --- | --- |
-| 包/依赖/版本 | `SwiftPM`，`Package.swift` 声明 `swift-tools-version:6.3` 与真实目标平台；`.swift-version` 锁 6.3.2；leaf 项目提交 `Package.resolved`；`swift build`/`swift run`。 |
+| 包/依赖/版本 | `SwiftPM`，`Package.swift` 声明与 toolchain 匹配的 `swift-tools-version` 与真实目标平台；`.swift-version` 锁定具体稳定版；leaf 项目提交 `Package.resolved`；`swift build`/`swift run`。 |
 | 格式化 | `swift-format` / `SwiftFormat`。 |
 | Lint | `SwiftLint`，配置 `.swiftlint.yml`。 |
 | 测试/覆盖率 | `swift test --enable-code-coverage`；`swift-testing`。 |

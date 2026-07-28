@@ -8,9 +8,9 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 新代码使用官方最新稳定 TypeScript（截至 2026-07 为 7.0.x）；新文件用 `.ts`/`.tsx`。需 Compiler API 的工具并装 `@typescript/typescript6` 兼容包，不把项目编译器降级。
-- `tsconfig.json`: `strict: true`、`target: es2025`、`module: esnext`；建议 `noUncheckedIndexedAccess`。模块统一 ESM (`import`/`export`)。
-- 生产项目用 Node 24 Active LTS；明确追新且依赖已兼容时可用 Node 26 Current。`package.json` 写对应 `engines`、`"type": "module"` 与精确 `packageManager`，`.nvmrc` 或 Volta 锁具体 Node patch。
+- 新代码使用官方最新稳定 TypeScript（落地时查官方发布页核实）；新文件用 `.ts`/`.tsx`。
+- `tsconfig.json`: `strict: true`、`target` 取当前稳定 ES 版本、`module: esnext`；建议 `noUncheckedIndexedAccess`。模块统一 ESM (`import`/`export`)。
+- 生产项目用当前 Node Active LTS；明确追新且依赖已兼容时可用 Current。`package.json` 写对应 `engines`、`"type": "module"` 与精确 `packageManager`，`.nvmrc` 或 Volta 锁具体 Node patch。
 - 现代语法优先：`?.`、`??`、解构、展开、模板字符串、`async`/`await`、顶层 `await`、`Array.at/findLast/toSorted`、`??=`/`||=`；可读性优先。
 - 禁止：`var`、`==`/`!=`、`namespace`、CommonJS `require`/`module.exports`、`enum`（用 `as const` 联合类型）、`any`。
 
@@ -60,10 +60,7 @@ alwaysApply: false
 
 ## 6. 库选型
 
-- 选现代、主流、积极维护的库：原生 TS 类型、ESM、async/await；不确定时核实发布时间与活跃度。
-- 高风险依赖（久未维护、star 少、小众）先说明维护/安全/替代风险并确认。
 - 新项目避免 `moment`、`request`、`lodash`；平台能力够用时不引库。
-- 能明显减少代码或降低误用概率时默认引入；体积/依赖复杂度只在多个合格候选间加权。
 - WebUI 加权：文档全、语料多、约定固定、强类型、源码可见可改；不凌驾于维护性和主流性。
 
 | 场景 | 默认 | 条件 |

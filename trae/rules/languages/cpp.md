@@ -9,7 +9,7 @@ alwaysApply: false
 ## 0. 基线
 
 - 新项目基线 C++23；C++20 只用于明确的存量兼容目标。优先 RAII、值语义、移动语义，避免手动资源管理。
-- `.bazelrc` 固定 `build --cxxopt=-std=c++23` 或 per-target `copts`；`.bazelversion` 锁官方最新稳定 Bazel（截至 2026-07 为 9.2.0），`MODULE.bazel` 显式声明 `rules_cc`，并用 `MODULE.bazel.lock` 锁依赖；compiler toolchain 固定最新稳定 GCC 16.x / Clang 22.x 或对应 MSVC。
+- `.bazelrc` 固定 `build --cxxopt=-std=c++23` 或 per-target `copts`；`.bazelversion` 锁官方最新稳定 Bazel LTS（落地时查官方发布页核实），`MODULE.bazel` 显式声明 `rules_cc`，并用 `MODULE.bazel.lock` 锁依赖；compiler toolchain 固定目标平台最新稳定 GCC / Clang 或对应 MSVC。
 - 现代语法优先：智能指针、`auto`、结构化绑定、范围 `for`、`if`/`switch` 初始化、`std::optional`、`std::variant`、`std::expected`、`std::string_view`、`std::span`、`constexpr`/`consteval`、Concepts、Ranges、`fmt`、`<chrono>`；可读性优先。
 - 禁止：裸 `new`/`delete` 或 owning 裸指针、C 风格强转、头文件/全局 `using namespace std;`、宏当常量/函数、裸数组和不安全 C API、未初始化变量、头文件定义非 `inline` 非模板函数/全局变量。
 
@@ -64,8 +64,6 @@ alwaysApply: false
 ## 6. 库选型
 
 - 标准库够用时不引第三方；新依赖须支持 C++23，并能通过 Bazel/bzlmod 引入。
-- 选现代、主流、积极维护的库；不确定时核实发布时间与活跃度。
-- 高风险依赖（久未维护、star 少、小众）先说明维护/安全/替代风险并确认。
 - `folly`/`wangle`、Boost、abseil 只引实际用到的子库；与标准库重叠功能优先标准库。
 - 引入依赖走 `MODULE.bazel` 的 `bazel_dep`，提交 `MODULE.bazel.lock`；避免手动 vendoring。
 

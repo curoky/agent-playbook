@@ -8,8 +8,8 @@ alwaysApply: false
 
 ## 0. 基线
 
-- 必用 Go Modules；新项目使用官方最新稳定 Go（截至 2026-07 为 1.26.5），`go.mod` 声明 `go 1.26.0`、`toolchain go1.26.5`。
-- 现代语法/标准库优先：泛型、`new(expr)`、`slices`、`maps`、`cmp`、`log/slog`、`errors.Is/As`、`fmt.Errorf("...: %w", err)`、`context.Context`、`for range n`、`range over func`；用 Go 1.26 `go fix` modernizers 升级旧惯用法，可读性优先。
+- 必用 Go Modules；新项目使用官方最新稳定 Go（落地时查官方发布页核实），`go.mod` 的 `go` 指令声明该稳定版、`toolchain` 锁定其最新 patch。
+- 现代语法/标准库优先：泛型、`new(expr)`、`slices`、`maps`、`cmp`、`log/slog`、`errors.Is/As`、`fmt.Errorf("...: %w", err)`、`context.Context`、`for range n`、`range over func`；用 `go fix` modernizers 升级旧惯用法，可读性优先。
 - 禁止：用 `panic` 处理可预期错误、`ioutil.*`、裸 goroutine 无生命周期管理、忽略 `error`、滥用 `interface{}`/`any`。
 
 ## 1. 风格与模块
@@ -62,9 +62,7 @@ alwaysApply: false
 ## 6. 库选型
 
 - 标准库优先；先确认 `net/http`、`encoding/json`、`log/slog`、`slices`、`maps`、`errors`、`context` 是否够用。
-- 选现代、主流、积极维护的库：Go modules、泛型友好、生产验证充分；不确定时核实发布时间与活跃度。
-- 高风险依赖（久未维护、star 少、小众）先说明维护/安全/替代风险并确认。
-- 避免停更/被取代库，如 `github.com/pkg/errors`；体积/依赖复杂度只在多个合格候选间加权。
+- 避免停更/被取代库，如 `github.com/pkg/errors`。
 
 | 场景 | 默认 | 条件 |
 | --- | --- | --- |

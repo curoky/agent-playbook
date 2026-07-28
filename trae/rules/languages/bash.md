@@ -11,7 +11,7 @@ alwaysApply: false
 - Shell 只做命令粘合和流程编排；出现复杂数据结构、非平凡字符串/数值处理、需单测的业务逻辑时改用 Python/Go。
 - 需要在未额外安装 shell 的 macOS/Linux 上运行时，用 `#!/bin/sh` 并严格遵循 POSIX；`#!/usr/bin/env bash` 只负责从 `PATH` 查找 Bash，不保证版本。
 - Bash 脚本头用 `set -euo pipefail`；POSIX `sh` 用 `set -eu`，需要检查管道中间命令状态时拆开执行，不依赖非标准 `pipefail`。仅在 Bash 中按需设置 `IFS=$'\n\t'`；POSIX `sh` 不使用 ANSI-C 引号。
-- 现代 Bash 新脚本基线为官方最新稳定 5.3.x；在文件头注明安装前提，并在入口用 `BASH_VERSINFO` 校验至少 5.3，不满足时向 stderr 报错并退出。不能保证该 runtime 时改写 POSIX `sh`。
+- 现代 Bash 新脚本基线为官方最新稳定版（落地时查官方发布页核实）；在文件头注明最低版本前提，并在入口用 `BASH_VERSINFO` 校验，不满足时向 stderr 报错并退出。不能保证该 runtime 时改写 POSIX `sh`。
 - 以下未明确标注 POSIX 的语法和实践仅适用于 Bash；写 `#!/bin/sh` 时只用 POSIX 定义的语法与工具行为。
 - 现代 Bash：`[[ ... ]]`、`(( ... ))`、`$(...)`、`${var:-default}`、`${var:?msg}`、`${var//a/b}`、数组、`declare -A`、`mapfile -t lines < file`。
 - 禁止：`eval` 拼命令、反引号命令替换、解析 `ls` 输出、无引号变量展开、未加引号的裸测试如 `[ $var == ... ]`。

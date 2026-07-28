@@ -50,21 +50,7 @@ alwaysApply: false
 
 ## 4. 语言与工具版本基线
 
-**核心原则**：新项目默认用官方最新稳定且生态兼容的版本，避免 EOL 与预发布版；落地前重新核实，并在配置中精确锁定。存量项目按既有兼容边界升级，不静默改版本。
-
-**新项目默认快照**（截至 2026-07；这是离线兜底，不替代落地时查官方发布页）：
-
-| 语言 / 项 | 新项目默认 | 发布轨道 / 兼容说明 |
-| --- | --- | --- |
-| Node.js | 24.x Active LTS（生产） | 26.x Current 仅用于明确追新且依赖已兼容的项目；生产遵循 Node 官方 LTS 建议 |
-| TypeScript | 7.0.x（`strict: true`、`target: es2025`、`module: esnext`） | 需要 Compiler API 的工具可并装 `@typescript/typescript6`，不无声把项目编译器降回 6.x |
-| Python | 3.14.x | 3.15 仍为 pre-release，不默认采用 |
-| Go | 1.26.x | `go` 与 `toolchain` 指令锁定 1.26 最新 patch |
-| C++ 标准 | C++23 | C++26 正式发布前不作为稳定默认 |
-| C++ 编译器 | GCC 16.x / Clang 22.x / 最新稳定 MSVC | 选择目标平台最新稳定工具链并精确锁定 |
-| Swift | 6.3.x（Swift 6 language mode） | 平台版本按 Apple / Linux / Windows / Wasm / Android 目标分别声明 |
-| Bazel | 9.2.x LTS（bzlmod） | 不默认用 Bazel 10 rolling；`.bazelversion` 固定 patch |
-| Bash | 5.3.x | 无法保证现代 Bash runtime 时改用 POSIX `sh` |
+**核心原则**：新项目默认用官方最新稳定且生态兼容的版本，避免 EOL 与预发布版；落地前查官方发布页重新核实，并在配置中精确锁定。存量项目按既有兼容边界升级，不静默改版本。
 
 - **精确锁定**：兼容范围用于发布声明，开发/CI runtime 与工具链锁到具体 patch。JS 提交 `packageManager` + `.nvmrc`/Volta，Python 提交 `.python-version`，Go 写 `toolchain`，C++ 固定 Bazel 与 hermetic compiler toolchain，Swift 用 Swiftly/Xcode 选择固定 toolchain；Bash 脚本启动时校验最低版本。
 - **升级判据**：最新版本若缺少关键 API 或生态支持，记录具体阻塞、官方来源与临时版本；阻塞解除后由 Renovate 或定期审计恢复到最新稳定版。
