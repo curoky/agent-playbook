@@ -1,16 +1,25 @@
----
-description: 编写 Go 代码，或为 Go 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.go,go.mod,go.sum,go.work,.golangci.yml,.golangci.yaml
-alwaysApply: false
----
+# Go 重构参考（详细·确定性）
 
-# Go 规则
+> 写/改/重构/评审 Go,或起步(0→1)选型时加载。本文件是 Go 的完整规范:起步基线(§0)+「旧惯用法 → 现代惯用法」改写映射 + 风格/类型/错误/并发/测试/安全/库选型条件/工具链。冲突时以 `refactor/SKILL.md` 的重构判据为准。
 
 ## 0. 基线
 
-- 必用 Go Modules；新项目使用官方最新稳定 Go（落地时查官方发布页核实），`go.mod` 的 `go` 指令声明该稳定版、`toolchain` 锁定其最新 patch。
-- 现代语法/标准库优先：泛型、`new(expr)`、`slices`、`maps`、`cmp`、`log/slog`、`errors.Is/As`、`fmt.Errorf("...: %w", err)`、`context.Context`、`for range n`、`range over func`；用 `go fix` modernizers 升级旧惯用法，可读性优先。
-- 禁止：用 `panic` 处理可预期错误、`ioutil.*`、裸 goroutine 无生命周期管理、忽略 `error`、滥用 `interface{}`/`any`。
+- 必用 Go Modules;新项目用官方最新稳定 Go(落地核实),`go.mod` 的 `go` 指令声明该稳定版、`toolchain` 锁定其最新 patch。
+- 标准库优先(`net/http`、`encoding/json`、`log/slog`、`slices`/`maps`、`cmp`、`errors`、`context`、`time`),够用不引三方。
+- 现代语法/标准库优先:泛型、`slices`/`maps`/`cmp`、`min`/`max` 内建、`for range n`、`errors.Is`/`As` + `fmt.Errorf("...: %w", err)`、`log/slog`;用 `go fix` modernizers 升级旧惯用法,可读性优先。
+
+## 现代化改写映射（旧 → 新）
+
+- `ioutil.ReadFile`/`ReadAll`/`WriteFile` → `os`/`io` 对应函数。
+- 手写 min/max/包含/排序循环 → `min`/`max` 内建、`slices`、`maps`、`cmp`。
+- `for i := 0; i < n; i++`（仅计数） → `for range n`。
+- `golang.org/x/exp/slices`、`golang.org/x/exp/maps` → 标准库 `slices`/`maps`。
+- `github.com/pkg/errors` 的 `Wrap`/`Cause` → `fmt.Errorf("...: %w", err)` + `errors.Is/As`。
+- 手写 log 前缀/字段拼接 → `log/slog` 结构化键值。
+- `golang/mock`（已归档） → `uber-go/mock`。
+- `google/wire`（已归档）新项目 → 手动构造函数注入。
+- `lib/pq` → `pgx`。
+- 用 `go fix` modernizers 批量升级旧惯用法后人工复核。
 
 ## 1. 风格与模块
 

@@ -1,19 +1,33 @@
----
-description: 编写 Swift 代码，或为 Swift 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.swift,.swift-version,Package.resolved
-alwaysApply: false
----
+# Swift 重构参考（详细·确定性）
 
-# Swift 规则
+> 写/改/重构/评审 Swift,或起步(0→1)选型时加载。本文件是 Swift 的完整规范:起步基线(§0)+「旧惯用法 → 现代惯用法」改写映射 + 风格/类型/错误/并发/测试/安全/库选型条件/语言构造选择/工具链。冲突时以 `refactor/SKILL.md` 的重构判据为准。
 
 ## 0. 基线
 
-- 新项目使用官方最新稳定 Swift（落地时查官方发布页核实），不默认使用 development snapshot；用 `.swift-version` / Swiftly 或 Xcode toolchain 选择锁定具体版本。
-- 启用 Swift 6 language mode，strict concurrency 设为 `complete`，把数据竞争拦在编译期；开启 opt-in strict memory safety 标记不安全构造。
-- 用 Swift Package Manager；`Package.swift` 声明与所用 toolchain 匹配的 `swift-tools-version`。仅按实际目标声明 Apple / Linux / Windows / Wasm / Android 平台约束，不把通用 Swift package 强制限定为 macOS。
-- leaf app / executable 提交 `Package.resolved` 保证部署可复现；library 可为自身 CI 提交，但明确它不会锁定下游消费者的依赖解析。
-- 值语义优先：`struct`/`enum` 优先于 `class`，默认 `let` 而非 `var`；现代语法优先：`async`/`await`、`actor`、结构化并发、`guard let`/`if let` 简写解包、`some`/`any`、`Result`、typed `throws`、`Codable`、Regex 字面量、result builder、尾随闭包；性能敏感路径用 `InlineArray`（`[N of T]`）与 `Span`/`RawSpan`；可读性优先。
-- 禁止：强制解包 `!` 与隐式解包可选（测试/明确不变量除外）、`as!` 强制转型、`try!`（测试除外）、用 `fatalError`/`preconditionFailure` 处理可预期错误、无理由的 `@unchecked Sendable`、保留循环引用（用 `weak`/`unowned`）。
+- **版本**:官方最新稳定 Swift,启用 Swift 6 language mode 与 strict concurrency `complete`(落地核实);`.swift-version` 锁定具体稳定版。
+- **包/构建**:`SwiftPM`,`Package.swift` 声明与 toolchain 匹配的 `swift-tools-version` 与真实目标平台,leaf 项目提交 `Package.resolved`。
+- 标准库/Foundation 够用时不引三方(`Codable`、`URLSession`、`swift-collections`);优先 swiftlang/swift-server/Apple/Point-Free 生态。
+
+## 现代化改写映射（旧 → 新）
+
+- 强制解包 `!`、隐式解包可选 → `guard let`/`if let`（简写解包）、`??` 默认值。
+- `as!` 强制转型 → `as?` + 分支处理或 `guard`。
+- completion handler / 回调 → `async`/`await` + 结构化并发；桥接旧 API 用 `withCheckedContinuation`/`withCheckedThrowingContinuation`。
+- `class` + 手动锁保护共享可变状态 → `actor` 隔离。
+- `ObservableObject`/`@Published` → `@Observable` 宏 + `@State`/`@Bindable`。
+- `Foundation.Process` → async-native `swift-subprocess` 的 `run(_:arguments:)`。
+- Core Data 新项目 → `SwiftData`；`grpc-swift` v1 → `grpc-swift-2`。
+- 未类型化 `throws` → typed `throws`（Swift 6.0）约束错误类型。
+- `Array` 定长热点 → `InlineArray`（`[N of T]`）。
+- `Any`/`AnyObject` → 泛型、`protocol`、`some`（opaque）/`any`（existential）。
+
+## Approachable Concurrency 接线（Swift 6 迁移要点）
+
+- SPM 无单一开关，需在 target `swiftSettings` 显式接线：
+  - UI/可执行 target 配 `.defaultIsolation(MainActor.self)`，默认单线程主 actor 隔离，减少 `@MainActor` 标注；这是独立旋钮，与下面的 upcoming feature 分开。
+  - 已用 `swiftLanguageModes: [.v6]` 时，再开尚未随 v6 默认启用的 upcoming feature：`.enableUpcomingFeature("NonisolatedNonsendingByDefault")`（SE-0461，`nonisolated async` 继承调用方上下文）与 `.enableUpcomingFeature("InferIsolatedConformances")`（SE-0470）。
+- 需要真正并行、脱离当前 actor 到并发线程池的部分，显式标 `@concurrent`；否则 `async` 默认留在调用方上下文，避免无谓的 actor 跳变。
+- 开启 opt-in strict memory safety 标记不安全构造。
 
 ## 1. 风格与模块
 

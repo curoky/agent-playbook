@@ -1,17 +1,26 @@
----
-description: 编写 C++ 代码，或为 C++ 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.cpp,*.cc,*.cxx,*.hpp,*.hh,*.hxx,*.h,*.ixx,*.cppm,BUILD,BUILD.bazel,*.bzl,MODULE.bazel,.bazelrc,.bazelversion
-alwaysApply: false
----
+# C++ 重构参考（详细·确定性）
 
-# C++ 规则
+> 写/改/重构/评审 C++,或起步(0→1)选型时加载。本文件是 C++ 的完整规范:起步基线(§0)+「旧惯用法 → 现代惯用法」改写映射 + 风格/类型/错误/并发/测试/安全/库选型条件/工具链。冲突时以 `refactor/SKILL.md` 的重构判据为准。
 
 ## 0. 基线
 
-- 新项目基线 C++23；C++20 只用于明确的存量兼容目标。优先 RAII、值语义、移动语义，避免手动资源管理。
-- `.bazelrc` 固定 `build --cxxopt=-std=c++23` 或 per-target `copts`；`.bazelversion` 锁官方最新稳定 Bazel LTS（落地时查官方发布页核实），`MODULE.bazel` 显式声明 `rules_cc`，并用 `MODULE.bazel.lock` 锁依赖；compiler toolchain 固定目标平台最新稳定 GCC / Clang 或对应 MSVC。
-- 现代语法优先：智能指针、`auto`、结构化绑定、范围 `for`、`if`/`switch` 初始化、`std::optional`、`std::variant`、`std::expected`、`std::string_view`、`std::span`、`constexpr`/`consteval`、Concepts、Ranges、`fmt`、`<chrono>`；可读性优先。
-- 禁止：裸 `new`/`delete` 或 owning 裸指针、C 风格强转、头文件/全局 `using namespace std;`、宏当常量/函数、裸数组和不安全 C API、未初始化变量、头文件定义非 `inline` 非模板函数/全局变量。
+- **标准**:新项目基线 C++23(C++20 仅用于明确的存量兼容目标);`.bazelrc` 固定 `build --cxxopt=-std=c++23` 或 per-target `copts`;compiler toolchain 固定目标平台最新稳定 GCC/Clang/MSVC(落地核实)。
+- **构建/依赖**:`Bazel` bzlmod,`.bazelversion` 锁官方最新稳定 Bazel LTS,`MODULE.bazel` 显式声明 `rules_cc`,用 `MODULE.bazel.lock` 锁依赖(BCR 优先)。
+- 优先 RAII、值语义、移动语义,避免手动资源管理;标准库够用时不引三方,新依赖须支持 C++23 且能经 bzlmod 引入,只引用到的子库。
+
+## 现代化改写映射（旧 → 新）
+
+- 裸 `new`/`delete`、owning 裸指针 → `std::unique_ptr`/`std::shared_ptr`、RAII。
+- C 风格强转 `(T)x` → `static_cast`/`reinterpret_cast`/`const_cast`。
+- 裸数组 + 长度参数 → `std::span`；C 字符串 → `std::string_view`。
+- `strcpy`/`sprintf`/`gets` → 边界安全 API、`fmt::format`。
+- `printf`/`std::cout` 格式化 → `fmt::format`/`fmt::print`。
+- 输出参数 + 错误码 int 返回 → `std::expected<T, E>`（C++23）/`tl::expected`（C++20）。
+- 可能为空的指针返回 → `std::optional<T>`。
+- 手写 typedef 枚举/宏常量 → `enum class`、`constexpr`。
+- 裸 `std::thread` 忘记 join → `std::jthread`。
+- `std::rand` → `libsodium`/OS CSPRNG；`system()` → `posix_spawn`/参数数组。
+- 手动 vendoring 依赖 → `MODULE.bazel` 的 `bazel_dep`。
 
 ## 1. 风格与模块
 

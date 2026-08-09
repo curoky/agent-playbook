@@ -1,18 +1,26 @@
----
-description: 编写 JavaScript/TypeScript 代码，或为 JS/TS 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.ts,*.tsx,*.js,*.jsx,*.mts,*.cts,package.json,tsconfig*.json,biome.json,biome.jsonc,pnpm-workspace.yaml
-alwaysApply: false
----
+# JavaScript / TypeScript 重构参考（详细·确定性）
 
-# JavaScript / TypeScript 规则
+> 写/改/重构/评审 JS/TS,或起步(0→1)选型时加载。本文件是 JS/TS 的完整规范:起步基线(§0)+「旧惯用法 → 现代惯用法」改写映射 + 风格/类型/错误/异步/测试/安全/库选型条件/工具链。冲突时以 `refactor/SKILL.md` 的重构判据为准。
 
 ## 0. 基线
 
-- 新代码使用官方最新稳定 TypeScript（落地时查官方发布页核实）；新文件用 `.ts`/`.tsx`。
-- `tsconfig.json`: `strict: true`、`target` 取当前稳定 ES 版本、`module: esnext`；建议 `noUncheckedIndexedAccess`。模块统一 ESM (`import`/`export`)。
-- 生产项目用当前 Node Active LTS；明确追新且依赖已兼容时可用 Current。`package.json` 写对应 `engines`、`"type": "module"` 与精确 `packageManager`，`.nvmrc` 或 Volta 锁具体 Node patch。
-- 现代语法优先：`?.`、`??`、解构、展开、模板字符串、`async`/`await`、顶层 `await`、`Array.at/findLast/toSorted`、`??=`/`||=`；可读性优先。
-- 禁止：`var`、`==`/`!=`、`namespace`、CommonJS `require`/`module.exports`、`enum`（用 `as const` 联合类型）、`any`。
+- **版本**:官方最新稳定 TypeScript(`strict: true`、ESM)+ 当前 Node Active LTS(落地核实);`package.json` 锁 `engines`/`packageManager`、写 `"type": "module"`,`.nvmrc` 或 Volta 锁 patch。建议开 `noUncheckedIndexedAccess`,`target` 取当前稳定 ES 版本、`module: esnext`。
+- 新文件用 `.ts`/`.tsx`;模块统一 ESM(`import`/`export`)。
+- 平台能力够用时不引库(内置 `fetch`、`crypto.randomUUID()`、`--env-file`)。
+
+## 现代化改写映射（旧 → 新）
+
+- `var` → `const`/`let`。
+- `require`/`module.exports` → ESM `import`/`export`。
+- `==`/`!=` → `===`/`!==`。
+- `enum` → `as const` 联合类型。
+- `namespace` → ESM 模块。
+- `moment` → `Temporal`（缺失用 polyfill）/`date-fns`；`request` → `ofetch`；`lodash` → `es-toolkit` 或平台能力。
+- 手写 `try/catch` 控制流 → `neverthrow` 的 `Result`（希望错误进类型系统时）。
+- 回调/裸 `.then` 链 → `async`/`await`。
+- `Math.random` 密码学用途 → `node:crypto`。
+- default export → 具名导出。
+- `glob`/`fast-glob` → `tinyglobby`；`tsup` → `tsdown`（按官方迁移指南）。
 
 ## 1. 风格与模块
 

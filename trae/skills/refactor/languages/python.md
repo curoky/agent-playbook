@@ -1,18 +1,26 @@
----
-description: 编写 Python 代码，或为 Python 项目做技术选型、引入第三方库、在多个候选库间抉择时使用（编码实践 + 库选型）
-globs: *.py,*.pyi,pyproject.toml,.python-version,uv.lock,ruff.toml
-alwaysApply: false
----
+# Python 重构参考（详细·确定性）
 
-# Python 规则
+> 写/改/重构/评审 Python,或起步(0→1)选型时加载。本文件是 Python 的完整规范:起步基线(§0)+「旧惯用法 → 现代惯用法」改写映射 + 风格/类型/错误/并发/测试/安全/库选型条件/工具链。冲突时以 `refactor/SKILL.md` 的重构判据为准。
 
 ## 0. 基线
 
-- 全量类型注解；用 `mypy` 或 `pyright` 做静态检查。
-- 新项目用官方最新稳定 Python（落地时查官方发布页核实，不用 pre-release）；`pyproject.toml` 声明 `requires-python` 下限，`.python-version` 锁定该稳定版最新 patch。用 `uv` 管理环境与依赖，提交 `.python-version`、`uv.lock`。
-- 现代语法优先：`match`/`case`、`list[int]`、`X | None`、`type` 别名、f-string、t-string（需结构化模板时）、`pydantic` 模型、`:=`、`pathlib`、`with`、推导式；可读性优先。
-- 数据模型默认 `pydantic`；无需校验/序列化且要求轻量时用 `dataclasses`。
-- 禁止：`from x import *`、可变默认参数、旧式 `typing.List/Dict/Optional`、用 `os.path` 拼路径、裸 `except:`、裸 `Any`。
+- **版本**:官方最新稳定 Python(落地核实);提交 `.python-version`。
+- **类型检查**:`mypy`(CI 严格门禁)/`pyright`(编辑器反馈),开 strict。
+- 标准库优先(`pathlib`、`zoneinfo`、`subprocess`、`logging`、`secrets`、`json`、`asyncio`),够用不引三方。
+
+## 现代化改写映射（旧 → 新）
+
+- `typing.List`/`Dict`/`Optional`/`Union` → `list`/`dict`/`X | None`/`X | Y`。
+- `os.path.join`/`os.path.exists` → `pathlib.Path`。
+- `%`/`.format()` 字符串拼接 → f-string。
+- 长 `if/elif` 类型分派 → `match`/`case`。
+- 裸 `except:`/`except Exception` 吞错 → 捕获具体异常；`raise X from e`。
+- 可变默认参数（`def f(x=[])`） → `None` 哨兵 + 函数内初始化。
+- `argparse` → `typer`；`requests` 新代码 → `httpx`。
+- `random` 令牌用途 → `secrets`；手写 SQL 拼接 → 参数化/`sqlalchemy`。
+- `print` 日志 → `loguru`（应用）/`logging`（库）。
+- 手写校验/`__init__` 样板 → `pydantic` 模型。
+- 用 `ruff` 一体化替代 `black`+`isort`+`flake8`。
 
 ## 1. 风格与模块
 
