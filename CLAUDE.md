@@ -18,12 +18,13 @@
 
 > Trae 递归读取 `trae/rules/` 及子目录(最多 3 层)。每个文件自洽,拷贝时整目录带上以保引用完整。
 
-**重量级、按场景手动加载的内容放 `refactor` skill,不进常驻 rule**:
+**重量级、按场景手动加载的内容放 skill,不进常驻 rule**:
 
-- **语言规范** [`trae/skills/refactor/languages/{lang}.md`](./trae/skills/refactor/languages/)(js/ts、python、go、cpp、swift、bash):各语言完整规范,写/改/重构/评审该语言或起步(0→1)选型时加载。单文件自洽,含起步基线(§0,版本/标准/dialect)、「旧惯用法 → 现代惯用法」改写映射、风格/类型/错误/并发/注释测试/安全日志、库选型条件与场景→默认库表、工具链。
-- **工程化篇** [`trae/skills/refactor/engineering.md`](./trae/skills/refactor/engineering.md):跨语言工程约定(项目结构、配置与环境、统一工具链、版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD),搭项目、配工具链、发版或治理依赖时加载。
+- **语言规范** [`trae/skills/refactor/languages/{lang}.md`](./trae/skills/refactor/languages/)(js/ts、python、go、cpp、swift、bash):各语言完整规范,写/改/重构/评审该语言或起步(0→1)选型时加载。单文件自洽,含起步基线(§0,版本/标准/dialect)、「旧惯用法 → 现代惯用法」改写映射、风格/类型/错误/并发/注释测试/安全日志、库选型条件与场景→默认库表、工具链。**这些文件是语言选型与工具链的唯一真相**,`refactor` 与 `project-setup` 两个 skill 都引用它,不重复枚举各语言结论。
+- **重构方法论** [`trae/skills/refactor/SKILL.md`](./trae/skills/refactor/SKILL.md):按「重写」思路重构既有代码的通用方法论(清除历史包袱、简洁优先、系统性降复杂度、执行流程),重构/清理/简化代码时加载。
+- **工程化** [`trae/skills/project-setup/SKILL.md`](./trae/skills/project-setup/SKILL.md):跨语言工程约定的**原则**(项目结构、配置与环境、统一工具链、版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD),从零搭项目、配工具链、发版或治理依赖时加载;只讲跨语言原则,各语言具体工具/锁文件/库名指向 `languages/{lang}.md`。
 
-> 这些内容不放常驻 rule 的原因:体量大、多数对话用不上,靠 `globs`/`description` 全程注入会污染上下文;集中到 `refactor` skill 按需加载,写代码时不占 token,较真时手动拉齐全。skill 的 `description` 已把「重构 + 语言 + 搭项目/工程治理」场景词纳入,相关请求会触发挂载。
+> 这些内容不放常驻 rule 的原因:体量大、多数对话用不上,靠 `globs`/`description` 全程注入会污染上下文;集中到 skill 按需加载,写代码时不占 token,较真时手动拉齐全。两个 skill 的 `description` 分别覆盖「重构」与「搭项目/工程治理」场景词,相关请求会触发挂载。
 
 ## 迭代与维护原则
 
@@ -31,7 +32,7 @@
 
 - **保持风格一致**:规则正文面向 agent,优先保留可执行约束、工具/库名、禁止项和判据;少写解释性铺垫。
 - **正确配置生效方式**:通用行为准则用 `alwaysApply: true`(仅 `ai-collaboration.md`);强绑定文件类型用 `globs`;按场景触发用 `description`;提交内容相关用 `scene: git_message`。控制单文件粒度,规则间不冲突。
-- **保持各文件自洽、跨文件引用不 load-bearing**:内容归属看「使用时机匹配哪种 frontmatter 触发」——语言特定的写码/重构规范进 `skills/refactor/languages/`、跨语言的搭脚手架/治理约定进 `skills/refactor/engineering.md`(均按需加载,不进常驻 rule),写提交时用的进 `git-commit-message.md`;跨文件引用只作软提示。
+- **保持各文件自洽、跨文件引用不 load-bearing**:内容归属看「使用时机匹配哪种 frontmatter 触发」——语言特定的写码/重构规范进 `skills/refactor/languages/`、重构方法论进 `skills/refactor/SKILL.md`、跨语言的搭脚手架/治理约定进 `skills/project-setup/SKILL.md`(均按需加载,不进常驻 rule),写提交时用的进 `git-commit-message.md`;跨文件引用只作软提示。
 - **规则写结论,不写过程**:规则给库名、命令、配置项等**可直接执行的结论**(如「用 `pydantic`」「用 `uv`」);**具体版本号、外部链接、以及「为什么选这个库」的理据**不进规则——前者会过期、后者部署到消费项目用不上,统一沉淀到本文件「维护参考」。规则里表述版本用「官方最新稳定版,落地核实」这类耐久措辞。
 - **不放链接**:规则正文不写 Markdown 链接(库名保留反引号即可);权威链接集中在本文件「维护参考」,降低规则注入时的 token 开销。
 - **控制篇幅**:单个条目聚焦单一主题;避免冗余铺垫与重复举例,保留可执行信息。
