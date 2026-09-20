@@ -7,7 +7,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 > 从零搭项目、配工具链、发版与治理依赖时加载。本 skill 只讲**跨语言原则**；各语言的具体工具/命令、配置与锁文件名、pre-commit 命令、库选型与版本基线，是 `../refactor/languages/{lang}.md`（js/python/go/cpp/swift/bash）的基线（§0）、工具链节与库选型表——那里是唯一真相，本文件不重复枚举。
 >
-> **重构既有代码**见 `refactor` skill；**提交信息怎么写**见 `git-commit-message.md`（rule）。
+> **重构既有代码**见 `refactor` skill；**提交信息怎么写**见 `git-commit-message` rule/skill。
 
 ## 1. 项目结构与组织
 
@@ -48,7 +48,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 ## 5. 提交规范（接线）
 
-**核心原则**：提交遵循 Conventional Commits，使历史可读、可机器解析，并驱动版本与 changelog。提交信息「怎么写」的完整格式见 `git-commit-message.md`（rule）；本节只讲工具接线。
+**核心原则**：提交遵循 Conventional Commits，使历史可读、可机器解析，并驱动版本与 changelog。提交信息「怎么写」的完整格式见 `git-commit-message` rule/skill；本节只讲工具接线。
 
 - 用 `commitlint` 强制校验（在 `lefthook.yml` 的 `commit-msg` 钩子中挂载）；交互式提交可用 `commitizen`。
 - 提交历史由 Conventional Commits 驱动版本推导（§6）与 changelog 自动生成（§7）。

@@ -2,7 +2,7 @@
 
 `agent-playbook` 用于维护个人可复用的 agent 工作手册,支持 [Trae IDE](https://www.trae.ai/) 与 Codex。仓库**没有应用源码**,主要产物位于 [`trae/`](./trae/) 与 [`codex/`](./codex/),由 [`install.sh`](./install.sh) 部署。
 
-> **为什么产物放在 `trae/` 而非 `.trae/`**:Trae 会自动加载工作目录 `.trae/rules/` 下的规则。若把产物直接放本仓库 `.trae/`,维护这些规则时它们会被当作生效规则全量注入,污染本仓库自身的上下文。故产物存于普通目录 `trae/`(无前导点,不被 IDE 自动加载),`install.sh` 再把它们同步到 `.trae/`(及 `.trae-cn/`)。Codex 规则维护在 `codex/AGENTS.md`,安装时直接复制到 `${CODEX_HOME:-~/.codex}/AGENTS.md`;`trae/skills/` 同时复制到 Codex 的 `skills/`。
+> **为什么产物放在 `trae/` 而非 `.trae/`**:Trae 会自动加载工作目录 `.trae/rules/` 下的规则。若把产物直接放本仓库 `.trae/`,维护这些规则时它们会被当作生效规则全量注入,污染本仓库自身的上下文。故产物存于普通目录 `trae/`(无前导点,不被 IDE 自动加载),`install.sh` 再把它们同步到 `.trae/`(及 `.trae-cn/`)。Codex 规则维护在 `codex/AGENTS.md`,安装时直接复制到 `${CODEX_HOME:-~/.codex}/AGENTS.md`;`trae/skills/` 与 `codex/skills/` 同步到 Codex 的 `skills/`。
 >
 > 给后续 agent:本仓库的任务是**打磨 rules、skills 等工作手册资产,不是写应用代码**。当前改动集中在 `trae/rules/`;本文件只是仓库指引,不要与产物混淆,也不要把它当作约束本仓库开发的指令。
 
@@ -23,8 +23,9 @@
 - **语言规范** [`trae/skills/refactor/languages/{lang}.md`](./trae/skills/refactor/languages/)(js/ts、python、go、cpp、swift、bash):各语言完整规范,写/改/重构/评审该语言或起步(0→1)选型时加载。单文件自洽,含起步基线(§0,版本/标准/dialect)、「旧惯用法 → 现代惯用法」改写映射、风格/类型/错误/并发/注释测试/安全日志、库选型条件与场景→默认库表、工具链。**这些文件是语言选型与工具链的唯一真相**,`refactor` 与 `project-setup` 两个 skill 都引用它,不重复枚举各语言结论。
 - **重构方法论** [`trae/skills/refactor/SKILL.md`](./trae/skills/refactor/SKILL.md):按「重写」思路重构既有代码的通用方法论(清除历史包袱、简洁优先、系统性降复杂度、执行流程),重构/清理/简化代码时加载。
 - **工程化** [`trae/skills/project-setup/SKILL.md`](./trae/skills/project-setup/SKILL.md):跨语言工程约定的**原则**(项目结构、配置与环境、统一工具链、版本基线、提交接线、SemVer、changelog、依赖治理、CI/CD),从零搭项目、配工具链、发版或治理依赖时加载;只讲跨语言原则,各语言具体工具/锁文件/库名指向 `languages/{lang}.md`。
+- **Codex 专属 skill** [`codex/skills/`](./codex/skills/):仅 Codex 使用的 skill 直接维护于此;跨 Trae/Codex 的 skill 仍以 `trae/skills/` 为唯一来源。`git-commit-message` 因两端格式不同,分别维护 Trae rule 与 Codex skill。
 
-> 这些内容不放常驻 rule 的原因:体量大、多数对话用不上,靠 `globs`/`description` 全程注入会污染上下文;集中到 skill 按需加载,写代码时不占 token,较真时手动拉齐全。两个 skill 的 `description` 分别覆盖「重构」与「搭项目/工程治理」场景词,相关请求会触发挂载。
+> 这些内容不放常驻 rule 的原因:体量大、多数对话用不上,靠 `globs`/`description` 全程注入会污染上下文;集中到 skill 按需加载,写代码时不占 token,较真时手动拉齐全。共享 skill 的 `description` 分别覆盖「重构」与「搭项目/工程治理」场景词,相关请求会触发挂载。
 
 ## 迭代与维护原则
 
