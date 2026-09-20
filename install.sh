@@ -6,11 +6,15 @@ mkdir -p "$HOME/.trae/user_rules"
 mkdir -p "$HOME/.trae/skills"
 mkdir -p "$HOME/.trae-cn/user_rules"
 mkdir -p "$HOME/.trae-cn/skills"
+mkdir -p "${CODEX_HOME:-"$HOME/.codex"}"
+mkdir -p "${CODEX_HOME:-"$HOME/.codex"}/skills"
 
 rsync -a "$SCRIPT_DIR/trae/rules/" "$HOME/.trae/user_rules/"
 rsync -a "$SCRIPT_DIR/trae/skills/" "$HOME/.trae/skills/"
 rsync -a "$SCRIPT_DIR/trae/rules/" "$HOME/.trae-cn/user_rules/"
 rsync -a "$SCRIPT_DIR/trae/skills/" "$HOME/.trae-cn/skills/"
+rsync -a "$SCRIPT_DIR/codex/" "${CODEX_HOME:-"$HOME/.codex"}/"
+rsync -a "$SCRIPT_DIR/trae/skills/" "${CODEX_HOME:-"$HOME/.codex"}/skills/"
 
 sync_rules_path() {
   local rules_path=$1

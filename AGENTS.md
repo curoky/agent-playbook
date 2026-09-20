@@ -1,8 +1,8 @@
-# CLAUDE.md
+# AGENTS.md
 
-`agent-playbook` 用于维护个人可复用的 agent 工作手册,专为 [Trae IDE](https://www.trae.ai/) 的规则(Rule)与技能(Skill)机制组织。仓库**没有应用源码**,主要产物是 [`trae/rules/`](./trae/rules/) 与 [`trae/skills/`](./trae/skills/),由 [`install.sh`](./install.sh) 部署到其他 Trae 项目。
+`agent-playbook` 用于维护个人可复用的 agent 工作手册,支持 [Trae IDE](https://www.trae.ai/) 与 Codex。仓库**没有应用源码**,主要产物位于 [`trae/`](./trae/) 与 [`codex/`](./codex/),由 [`install.sh`](./install.sh) 部署。
 
-> **为什么产物放在 `trae/` 而非 `.trae/`**:Trae 会自动加载工作目录 `.trae/rules/` 下的规则。若把产物直接放本仓库 `.trae/`,维护这些规则时它们会被当作生效规则全量注入,污染本仓库自身的上下文。故产物存于普通目录 `trae/`(无前导点,不被 IDE 自动加载),`install.sh` 再把它们同步到消费项目的 `.trae/`(及 `.trae-cn/`)使其生效。
+> **为什么产物放在 `trae/` 而非 `.trae/`**:Trae 会自动加载工作目录 `.trae/rules/` 下的规则。若把产物直接放本仓库 `.trae/`,维护这些规则时它们会被当作生效规则全量注入,污染本仓库自身的上下文。故产物存于普通目录 `trae/`(无前导点,不被 IDE 自动加载),`install.sh` 再把它们同步到 `.trae/`(及 `.trae-cn/`)。Codex 规则维护在 `codex/AGENTS.md`,安装时直接复制到 `${CODEX_HOME:-~/.codex}/AGENTS.md`;`trae/skills/` 同时复制到 Codex 的 `skills/`。
 >
 > 给后续 agent:本仓库的任务是**打磨 rules、skills 等工作手册资产,不是写应用代码**。当前改动集中在 `trae/rules/`;本文件只是仓库指引,不要与产物混淆,也不要把它当作约束本仓库开发的指令。
 

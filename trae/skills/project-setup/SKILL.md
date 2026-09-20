@@ -13,7 +13,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 **核心原则**：按功能组织，目录可预测、职责单一、入口清晰。
 
-- **标准目录布局**：源码放 `src/`、脚本放 `scripts/`、文档放 `docs/`，配置文件放仓库根；测试就近或集中，团队内统一其一。各语言的具体布局约定（Go 的 `cmd/`/`internal/`、C++ 的 `include/` + `BUILD.bazel` 等）见对应 `languages/{lang}.md`。
+- **标准目录布局**：源码放 `src/`、脚本放 `scripts/`、文档放 `docs/`，配置文件放仓库根；测试就近或集中，团队内统一其一。各语言的具体布局约定（Go 的 `cmd/`/`internal/`、C++ 的 `include/` + `BUILD.bazel` 等）见对应 `../refactor/languages/{lang}.md`。
 - **按功能分模块**：优先按业务领域/功能切分目录，而非 controllers/services/utils 等技术层大杂烩；避免 `util`/`common`/`base` 等无意义包与 `utils.h` 大杂烩。
 - **单包 vs monorepo**：单一职责项目用单包；多个可独立发布的包用 monorepo（具体 workspace 机制见各语言规范）。
 - **文件职责单一**：一个文件聚焦一个模块/类/功能；过大（经验值数百行）即按职责拆分。
@@ -33,7 +33,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 **核心原则**：用统一现代的工具链，配置入库，本地与 CI 复用配置和脚本入口，按反馈时延分层执行、结果可复现。
 
-- **工具选型偏好**：优先选速度快、配置少、能合并多职责的工具（如一体化 Lint + 格式化）；各语言具体工具见 `languages/{lang}.md` 的工具链节。
+- **工具选型偏好**：优先选速度快、配置少、能合并多职责的工具（如一体化 Lint + 格式化）；各语言具体工具见 `../refactor/languages/{lang}.md` 的工具链节。
 - **配置与锁文件入库**：项目的配置文件与锁文件必须提交，保证依赖可复现；具体文件名见各语言规范。
 - **git hook 统一用 `lefthook` 管理**：`lefthook.yml` 入库，支持并行执行与暂存文件过滤（`{staged_files}` + `glob`），替代 `husky`/`lint-staged`/`pre-commit` 框架/Makefile；`pre-commit` 只跑可按暂存文件执行的 format/lint 等秒级检查，`pre-push` 可按项目规模运行类型检查和测试，`commit-msg` 挂 `commitlint`（见 §5）。
 - **完整检查可一键运行**：提供一个项目级命令串起格式校验、Lint/静态分析、类型检查/vet、测试与构建；本地可主动运行，CI 强制执行。
@@ -43,7 +43,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 **核心原则**：新项目默认用官方最新稳定且生态兼容的版本，避免 EOL 与预发布版；落地前查官方发布页重新核实，并在配置中精确锁定。存量项目按既有兼容边界升级，不静默改版本。
 
-- **精确锁定**：兼容范围用于发布声明，开发/CI runtime 与工具链锁到具体 patch；各语言具体锁定方式（版本文件、`toolchain` 指令、hermetic toolchain 等）见 `languages/{lang}.md` 的基线（§0）。
+- **精确锁定**：兼容范围用于发布声明，开发/CI runtime 与工具链锁到具体 patch；各语言具体锁定方式（版本文件、`toolchain` 指令、hermetic toolchain 等）见 `../refactor/languages/{lang}.md` 的基线（§0）。
 - **升级判据**：最新版本若缺少关键 API 或生态支持，记录具体阻塞、官方来源与临时版本；阻塞解除后由 Renovate 或定期审计恢复到最新稳定版。
 
 ## 5. 提交规范（接线）
@@ -76,7 +76,7 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 - **首次引入先核实**：从官方 registry / release 获取最新稳定兼容版，检查支持的 runtime、最近发布、归档/停维状态、安全公告与许可证；已归档、明确停维或仅有预发布版的库不得作为新项目默认。
 - **例外要留依据**：因框架 peer dependency、平台或迁移成本不能用最新稳定版时，在 PR/设计记录中写明阻塞和升级条件，不凭模型记忆选择旧版本。
-- **锁文件必须提交**：所有语言的锁文件必须入库，CI 用 frozen/locked 模式校验一致性、禁静默更新；各语言具体锁文件名与校验命令见 `languages/{lang}.md`。
+- **锁文件必须提交**：所有语言的锁文件必须入库，CI 用 frozen/locked 模式校验一致性、禁静默更新；各语言具体锁文件名与校验命令见 `../refactor/languages/{lang}.md`。
 - **版本约束清晰**：直接依赖声明明确范围，运行版本以锁文件为准。
 
 **自动升级**：
@@ -90,12 +90,12 @@ description: "从零搭建项目与工程治理的跨语言约定：项目结构
 
 **安全审计**：
 
-- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断；各语言具体扫描工具（`pnpm audit`、`pip-audit`、`govulncheck`、`osv-scanner` 等）见 `languages/{lang}.md`。
+- **CI 强制扫描**：每次 PR 与主分支扫漏洞，达阈值即阻断；各语言具体扫描工具（`pnpm audit`、`pip-audit`、`govulncheck`、`osv-scanner` 等）见 `../refactor/languages/{lang}.md`。
 - **阻断阈值**：`high` 及以上（CVSS ≥ 7.0）须修复或显式豁免；`moderate` 及以下记录跟踪。
 - **修复 SLA**：`critical` 24h、`high` 7d、`moderate` 30d 内处理。
 - **豁免机制**：无法立即修复时登记白名单，注明原因/责任人/复审日期，并经评审。
 - **供应链加固**：CI 用最小权限 token；锁文件保证可复现；定期生成 SBOM（如 CycloneDX）。
-- **依赖精简**：定期清理未使用依赖（各语言工具见 `languages/{lang}.md`）；引入新依赖前对照对应语言「库选型」的选型判据。
+- **依赖精简**：定期清理未使用依赖（各语言工具见 `../refactor/languages/{lang}.md`）；引入新依赖前对照对应语言「库选型」的选型判据。
 - **许可证合规**：避免引入与项目协议冲突的依赖（如 GPL 进闭源），必要时用工具校验。
 
 ## 9. CI/CD 流水线
