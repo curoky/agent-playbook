@@ -10,3 +10,4 @@ scene: git_message
 - **type 选择**：`feat`（新功能）、`fix`（修复）、`docs`、`style`、`refactor`、`perf`、`test`、`build`、`ci`、`chore`——按本次改动的**主要意图**选其一，不堆砌多个 type。
 - **破坏性变更**：`type` 后加 `!`（如 `feat!:`）或在 footer 写 `BREAKING CHANGE: <说明>`。
 - **语言**：默认用英文撰写 commit message，保持简洁，不写客套话。
+- **署名**：不得添加 `Co-authored-by` trailer。
